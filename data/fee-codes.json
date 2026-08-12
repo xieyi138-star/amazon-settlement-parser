@@ -1,0 +1,1230 @@
+{
+  "version": 2,
+  "updated": "2026-08-12",
+  "what_this_is": "Observed values for the amount-type and amount-description columns of the Amazon Flat File V2 settlement report. Amazon publishes NO enumeration for these fields; every value here was collected from real reports and third-party documentation. This file is incomplete by construction.",
+  "sources": {
+    "observed-reports": {
+      "label": "Real settlement reports + third-party documentation collected by this project",
+      "confidence": "high for the value existing; amount-type placement seen directly in files"
+    },
+    "webgility-2025-10-26": {
+      "label": "Webgility help centre, \"Amazon Settlement Report Fee Groups and Fee Names\", updated 2025-10-26",
+      "confidence": "high for the value existing; MEDIUM for amount-type placement, because Webgility groups fees under its own labels for QuickBooks posting rather than the literal amount-type string"
+    }
+  },
+  "official_position": "Amazon's SP-API settlement report documentation lists the 24 column names only. It gives no permitted values, no data types and no nullability for transaction-type, amount-type or amount-description.",
+  "amount_types_observed_literally": [
+    "ItemPrice",
+    "ItemFees",
+    "Shipment-Fees",
+    "other-transaction",
+    "Promotion"
+  ],
+  "entries": [
+    {
+      "description": "Additional Other Expenses",
+      "amount_types": [
+        "other-transaction"
+      ],
+      "conflict": false,
+      "sources": [
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": false,
+      "placements": [
+        {
+          "amount_type": "other-transaction",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "Adjustment",
+      "amount_types": [
+        "other-transaction"
+      ],
+      "conflict": false,
+      "sources": [
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": false,
+      "placements": [
+        {
+          "amount_type": "other-transaction",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "Amazon Capital Services",
+      "amount_types": [
+        "other-transaction"
+      ],
+      "conflict": false,
+      "sources": [
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": false,
+      "placements": [
+        {
+          "amount_type": "other-transaction",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "Balance Adjustment",
+      "amount_types": [],
+      "conflict": false,
+      "sources": [
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": false,
+      "placements": []
+    },
+    {
+      "description": "BalanceAdjustment",
+      "amount_types": [
+        "other-transaction"
+      ],
+      "conflict": false,
+      "sources": [
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": false,
+      "placements": [
+        {
+          "amount_type": "other-transaction",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "Commission",
+      "amount_types": [
+        "ItemFees"
+      ],
+      "conflict": false,
+      "sources": [
+        "observed-reports",
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": true,
+      "placements": [
+        {
+          "amount_type": "ItemFees",
+          "source": "observed-reports"
+        },
+        {
+          "amount_type": "ItemFees",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "CS_ERROR_ITEMS",
+      "amount_types": [
+        "other-transaction"
+      ],
+      "conflict": false,
+      "sources": [
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": false,
+      "placements": [
+        {
+          "amount_type": "other-transaction",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "Current Reserve Amount",
+      "amount_types": [
+        "other-transaction"
+      ],
+      "conflict": false,
+      "sources": [
+        "observed-reports",
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": true,
+      "placements": [
+        {
+          "amount_type": "other-transaction",
+          "source": "observed-reports"
+        },
+        {
+          "amount_type": "other-transaction",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "DigitalServicesFee",
+      "amount_types": [
+        "ItemFees"
+      ],
+      "conflict": false,
+      "sources": [
+        "observed-reports"
+      ],
+      "in_parser_known_list": true,
+      "placements": [
+        {
+          "amount_type": "ItemFees",
+          "source": "observed-reports"
+        }
+      ]
+    },
+    {
+      "description": "DisposalComplete",
+      "amount_types": [
+        "other-transaction"
+      ],
+      "conflict": false,
+      "sources": [
+        "observed-reports",
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": true,
+      "placements": [
+        {
+          "amount_type": "other-transaction",
+          "source": "observed-reports"
+        },
+        {
+          "amount_type": "other-transaction",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "Failed Disbursement",
+      "amount_types": [
+        "other-transaction"
+      ],
+      "conflict": false,
+      "sources": [
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": false,
+      "placements": [
+        {
+          "amount_type": "other-transaction",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "FBA Inventory Reimbursement - Customer Return",
+      "amount_types": [
+        "other-transaction"
+      ],
+      "conflict": false,
+      "sources": [
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": false,
+      "placements": [
+        {
+          "amount_type": "other-transaction",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "FBACustomerReturnPerOrderFee",
+      "amount_types": [
+        "other-transaction"
+      ],
+      "conflict": false,
+      "sources": [
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": false,
+      "placements": [
+        {
+          "amount_type": "other-transaction",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "FBACustomerReturnPerUnitFee",
+      "amount_types": [
+        "other-transaction"
+      ],
+      "conflict": false,
+      "sources": [
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": false,
+      "placements": [
+        {
+          "amount_type": "other-transaction",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "FBACustomerReturnWeightBasedFee",
+      "amount_types": [
+        "other-transaction"
+      ],
+      "conflict": false,
+      "sources": [
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": false,
+      "placements": [
+        {
+          "amount_type": "other-transaction",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "FBAInboundTransportationFee",
+      "amount_types": [
+        "other-transaction"
+      ],
+      "conflict": false,
+      "sources": [
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": false,
+      "placements": [
+        {
+          "amount_type": "other-transaction",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "FBAPerOrderFulfillmentFee",
+      "amount_types": [
+        "Shipment-Fees",
+        "ItemFees"
+      ],
+      "conflict": true,
+      "sources": [
+        "observed-reports",
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": true,
+      "placements": [
+        {
+          "amount_type": "Shipment-Fees",
+          "source": "observed-reports"
+        },
+        {
+          "amount_type": "ItemFees",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "FBAPerUnitFulfillmentFee",
+      "amount_types": [
+        "ItemFees"
+      ],
+      "conflict": false,
+      "sources": [
+        "observed-reports",
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": true,
+      "placements": [
+        {
+          "amount_type": "ItemFees",
+          "source": "observed-reports"
+        },
+        {
+          "amount_type": "ItemFees",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "FBATransportationFee",
+      "amount_types": [
+        "Shipment-Fees"
+      ],
+      "conflict": false,
+      "sources": [
+        "observed-reports",
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": true,
+      "placements": [
+        {
+          "amount_type": "Shipment-Fees",
+          "source": "observed-reports"
+        },
+        {
+          "amount_type": "Shipment-Fees",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "FBAWeightBasedFee",
+      "amount_types": [
+        "ItemFees"
+      ],
+      "conflict": false,
+      "sources": [
+        "observed-reports",
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": true,
+      "placements": [
+        {
+          "amount_type": "ItemFees",
+          "source": "observed-reports"
+        },
+        {
+          "amount_type": "ItemFees",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "GiftWrap",
+      "amount_types": [
+        "ItemPrice"
+      ],
+      "conflict": false,
+      "sources": [
+        "observed-reports",
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": true,
+      "placements": [
+        {
+          "amount_type": "ItemPrice",
+          "source": "observed-reports"
+        },
+        {
+          "amount_type": "ItemPrice",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "GiftwrapChargeback",
+      "amount_types": [
+        "ItemFees"
+      ],
+      "conflict": false,
+      "sources": [
+        "observed-reports",
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": true,
+      "placements": [
+        {
+          "amount_type": "ItemFees",
+          "source": "observed-reports"
+        },
+        {
+          "amount_type": "ItemFees",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "GiftWrapTax",
+      "amount_types": [
+        "ItemPrice"
+      ],
+      "conflict": false,
+      "sources": [
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": false,
+      "placements": [
+        {
+          "amount_type": "ItemPrice",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "Goodwill",
+      "amount_types": [
+        "ItemPrice",
+        "ItemFees"
+      ],
+      "conflict": true,
+      "sources": [
+        "observed-reports",
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": true,
+      "placements": [
+        {
+          "amount_type": "ItemPrice",
+          "source": "observed-reports"
+        },
+        {
+          "amount_type": "ItemFees",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "INCORRECT_FEES_ITEMS",
+      "amount_types": [
+        "other-transaction"
+      ],
+      "conflict": false,
+      "sources": [
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": false,
+      "placements": [
+        {
+          "amount_type": "other-transaction",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "INCORRECT_FEES_NON_ITEMIZED",
+      "amount_types": [
+        "other-transaction"
+      ],
+      "conflict": false,
+      "sources": [
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": false,
+      "placements": [
+        {
+          "amount_type": "other-transaction",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "LightningDealFee Special",
+      "amount_types": [
+        "other-transaction"
+      ],
+      "conflict": false,
+      "sources": [
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": false,
+      "placements": [
+        {
+          "amount_type": "other-transaction",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "Manual Processing Fee",
+      "amount_types": [
+        "other-transaction"
+      ],
+      "conflict": false,
+      "sources": [
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": false,
+      "placements": [
+        {
+          "amount_type": "other-transaction",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "Manual Processing Fee Reimbursement",
+      "amount_types": [
+        "other-transaction"
+      ],
+      "conflict": false,
+      "sources": [
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": false,
+      "placements": [
+        {
+          "amount_type": "other-transaction",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "MarketplaceFacilitatorVAT-Principal",
+      "amount_types": [
+        "ItemFees"
+      ],
+      "conflict": false,
+      "sources": [
+        "observed-reports"
+      ],
+      "in_parser_known_list": true,
+      "placements": [
+        {
+          "amount_type": "ItemFees",
+          "source": "observed-reports"
+        }
+      ]
+    },
+    {
+      "description": "MarketplaceFacilitatorVAT-Shipping",
+      "amount_types": [
+        "ItemFees"
+      ],
+      "conflict": false,
+      "sources": [
+        "observed-reports"
+      ],
+      "in_parser_known_list": true,
+      "placements": [
+        {
+          "amount_type": "ItemFees",
+          "source": "observed-reports"
+        }
+      ]
+    },
+    {
+      "description": "Merchant Bad Debt",
+      "amount_types": [],
+      "conflict": false,
+      "sources": [
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": false,
+      "placements": []
+    },
+    {
+      "description": "MISSING_FROM_INBOUND",
+      "amount_types": [
+        "other-transaction"
+      ],
+      "conflict": false,
+      "sources": [
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": false,
+      "placements": [
+        {
+          "amount_type": "other-transaction",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "Multi-Channel Fulfillment Brand-Neutral Box Fee",
+      "amount_types": [
+        "Shipment-Fees"
+      ],
+      "conflict": false,
+      "sources": [
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": false,
+      "placements": [
+        {
+          "amount_type": "Shipment-Fees",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "MULTICHANNEL_ORDER_DAMAGED",
+      "amount_types": [
+        "other-transaction"
+      ],
+      "conflict": false,
+      "sources": [
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": false,
+      "placements": [
+        {
+          "amount_type": "other-transaction",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "MULTICHANNEL_ORDER_LATE",
+      "amount_types": [
+        "other-transaction"
+      ],
+      "conflict": false,
+      "sources": [
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": false,
+      "placements": [
+        {
+          "amount_type": "other-transaction",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "MULTICHANNEL_ORDER_LOST",
+      "amount_types": [
+        "other-transaction"
+      ],
+      "conflict": false,
+      "sources": [
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": false,
+      "placements": [
+        {
+          "amount_type": "other-transaction",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "NonSubscriptionFeeAdj",
+      "amount_types": [
+        "other-transaction"
+      ],
+      "conflict": false,
+      "sources": [
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": false,
+      "placements": [
+        {
+          "amount_type": "other-transaction",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "Previous Reserve Amount Balance",
+      "amount_types": [
+        "other-transaction"
+      ],
+      "conflict": false,
+      "sources": [
+        "observed-reports",
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": true,
+      "placements": [
+        {
+          "amount_type": "other-transaction",
+          "source": "observed-reports"
+        },
+        {
+          "amount_type": "other-transaction",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "Principal",
+      "amount_types": [
+        "ItemPrice"
+      ],
+      "conflict": false,
+      "sources": [
+        "observed-reports",
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": true,
+      "placements": [
+        {
+          "amount_type": "ItemPrice",
+          "source": "observed-reports"
+        },
+        {
+          "amount_type": "ItemPrice",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "Refund Reimbursal",
+      "amount_types": [
+        "other-transaction"
+      ],
+      "conflict": false,
+      "sources": [
+        "observed-reports",
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": true,
+      "placements": [
+        {
+          "amount_type": "other-transaction",
+          "source": "observed-reports"
+        }
+      ]
+    },
+    {
+      "description": "RefundCommission",
+      "amount_types": [
+        "ItemFees"
+      ],
+      "conflict": false,
+      "sources": [
+        "observed-reports",
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": true,
+      "placements": [
+        {
+          "amount_type": "ItemFees",
+          "source": "observed-reports"
+        },
+        {
+          "amount_type": "ItemFees",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "REMOVAL_ORDER_DAMAGED",
+      "amount_types": [
+        "other-transaction"
+      ],
+      "conflict": false,
+      "sources": [
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": false,
+      "placements": [
+        {
+          "amount_type": "other-transaction",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "RemovalComplete",
+      "amount_types": [
+        "other-transaction"
+      ],
+      "conflict": false,
+      "sources": [
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": false,
+      "placements": [
+        {
+          "amount_type": "other-transaction",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "RestockingFee",
+      "amount_types": [
+        "ItemPrice",
+        "ItemFees"
+      ],
+      "conflict": true,
+      "sources": [
+        "observed-reports",
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": true,
+      "placements": [
+        {
+          "amount_type": "ItemPrice",
+          "source": "observed-reports"
+        },
+        {
+          "amount_type": "ItemFees",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "ReturnShipping",
+      "amount_types": [
+        "ItemFees"
+      ],
+      "conflict": false,
+      "sources": [
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": false,
+      "placements": [
+        {
+          "amount_type": "ItemFees",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "REVERSAL_REIMBURSEMENT",
+      "amount_types": [
+        "other-transaction"
+      ],
+      "conflict": false,
+      "sources": [
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": false,
+      "placements": [
+        {
+          "amount_type": "other-transaction",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "SalesTaxServiceFee",
+      "amount_types": [
+        "ItemFees"
+      ],
+      "conflict": false,
+      "sources": [
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": false,
+      "placements": [
+        {
+          "amount_type": "ItemFees",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "Shipping",
+      "amount_types": [
+        "ItemPrice",
+        "Shipment-Fees",
+        "Promotion"
+      ],
+      "conflict": true,
+      "sources": [
+        "observed-reports",
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": true,
+      "placements": [
+        {
+          "amount_type": "ItemPrice",
+          "source": "observed-reports"
+        },
+        {
+          "amount_type": "Shipment-Fees",
+          "source": "webgility-2025-10-26"
+        },
+        {
+          "amount_type": "ItemPrice",
+          "source": "webgility-2025-10-26"
+        },
+        {
+          "amount_type": "Promotion",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "Shipping label purchase",
+      "amount_types": [
+        "other-transaction"
+      ],
+      "conflict": false,
+      "sources": [
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": false,
+      "placements": [
+        {
+          "amount_type": "other-transaction",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "ShippingChargeback",
+      "amount_types": [
+        "ItemFees"
+      ],
+      "conflict": false,
+      "sources": [
+        "observed-reports",
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": true,
+      "placements": [
+        {
+          "amount_type": "ItemFees",
+          "source": "observed-reports"
+        },
+        {
+          "amount_type": "ItemFees",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "ShippingHB",
+      "amount_types": [
+        "other-transaction",
+        "ItemFees"
+      ],
+      "conflict": true,
+      "sources": [
+        "observed-reports",
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": true,
+      "placements": [
+        {
+          "amount_type": "other-transaction",
+          "source": "observed-reports"
+        },
+        {
+          "amount_type": "ItemFees",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "ShippingServices",
+      "amount_types": [
+        "other-transaction"
+      ],
+      "conflict": false,
+      "sources": [
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": false,
+      "placements": [
+        {
+          "amount_type": "other-transaction",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "ShippingServicesRefund",
+      "amount_types": [
+        "other-transaction"
+      ],
+      "conflict": false,
+      "sources": [
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": false,
+      "placements": [
+        {
+          "amount_type": "other-transaction",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "ShippingTax",
+      "amount_types": [
+        "ItemPrice"
+      ],
+      "conflict": false,
+      "sources": [
+        "observed-reports",
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": true,
+      "placements": [
+        {
+          "amount_type": "ItemPrice",
+          "source": "observed-reports"
+        },
+        {
+          "amount_type": "ItemPrice",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "Storage Fee",
+      "amount_types": [
+        "other-transaction"
+      ],
+      "conflict": false,
+      "sources": [
+        "observed-reports",
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": true,
+      "placements": [
+        {
+          "amount_type": "other-transaction",
+          "source": "observed-reports"
+        },
+        {
+          "amount_type": "other-transaction",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "StorageRenewalBilling",
+      "amount_types": [
+        "other-transaction"
+      ],
+      "conflict": false,
+      "sources": [
+        "observed-reports",
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": true,
+      "placements": [
+        {
+          "amount_type": "other-transaction",
+          "source": "observed-reports"
+        },
+        {
+          "amount_type": "other-transaction",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "Subscription Fee",
+      "amount_types": [
+        "other-transaction"
+      ],
+      "conflict": false,
+      "sources": [
+        "observed-reports",
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": false,
+      "placements": [
+        {
+          "amount_type": "other-transaction",
+          "source": "observed-reports"
+        },
+        {
+          "amount_type": "other-transaction",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "Tax",
+      "amount_types": [
+        "ItemPrice",
+        "other-transaction"
+      ],
+      "conflict": true,
+      "sources": [
+        "observed-reports",
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": true,
+      "placements": [
+        {
+          "amount_type": "ItemPrice",
+          "source": "observed-reports"
+        },
+        {
+          "amount_type": "other-transaction",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "TransactionTotalAmount",
+      "amount_types": [
+        "other-transaction"
+      ],
+      "conflict": false,
+      "sources": [
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": false,
+      "placements": [
+        {
+          "amount_type": "other-transaction",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "VariableClosingFee",
+      "amount_types": [
+        "ItemFees"
+      ],
+      "conflict": false,
+      "sources": [
+        "observed-reports",
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": true,
+      "placements": [
+        {
+          "amount_type": "ItemFees",
+          "source": "observed-reports"
+        },
+        {
+          "amount_type": "ItemFees",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "WAREHOUSE_DAMAGE",
+      "amount_types": [
+        "other-transaction"
+      ],
+      "conflict": false,
+      "sources": [
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": false,
+      "placements": [
+        {
+          "amount_type": "other-transaction",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "WAREHOUSE_DAMAGE_EXCEPTION",
+      "amount_types": [
+        "other-transaction"
+      ],
+      "conflict": false,
+      "sources": [
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": false,
+      "placements": [
+        {
+          "amount_type": "other-transaction",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    },
+    {
+      "description": "WAREHOUSE_LOST",
+      "amount_types": [
+        "other-transaction"
+      ],
+      "conflict": false,
+      "sources": [
+        "webgility-2025-10-26"
+      ],
+      "in_parser_known_list": false,
+      "placements": [
+        {
+          "amount_type": "other-transaction",
+          "source": "webgility-2025-10-26"
+        }
+      ]
+    }
+  ]
+}

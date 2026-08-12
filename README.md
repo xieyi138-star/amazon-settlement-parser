@@ -64,45 +64,135 @@ The bundled synthetic sample uses `Order`, `Refund`, `ServiceFee`, `Shipment`, `
 
 Refund detection in the parser is a heuristic: `transaction-type` containing `refund`, case-insensitive. Cross-check it against the value inventory the tool prints for your own file.
 
+One further value worth knowing about: **`Order_Retrocharge`**. A seller reported it in issue #2345 on Amazon's own `amzn/selling-partner-api-models` repository, while trying to locate the XML format's `Retrocharge` node inside Flat File V2. Amazon never answered; the thread was closed by a bot for inactivity, and the original reporter could not find the value in his own file. Treat it as unconfirmed — and as a fair illustration of how these fields are documented.
+
+Amazon's own V1 → V2 migration table also states that the old `transaction-type` maps to "**transaction-type or amount-description**", and that "disjointed amounts may be consolidated". A parser reading only the `transaction-type` column will therefore miss rows, silently.
+
 ### `amount-type` → `amount-description`
 
-Observed pairings. **Recognised** means the value is present in the parser's built-in `KNOWN` list; anything not in that list is still displayed in full and tagged *unrecognised* — the parser never silently drops a row it does not know.
+**64 observed values.** Machine-readable source of truth: [`data/fee-codes.json`](data/fee-codes.json) — that file is canonical, this table is generated from it.
 
-| `amount-type` | `amount-description` | Recognised |
-|---|---|:--:|
-| `ItemPrice` | `Principal` | yes |
-| `ItemPrice` | `Shipping` | yes |
-| `ItemPrice` | `GiftWrap` | yes |
-| `ItemPrice` | `Goodwill` | yes |
-| `ItemPrice` | `RestockingFee` | yes |
-| `ItemPrice` | `Tax` | yes |
-| `ItemPrice` | `ShippingTax` | yes |
-| `ItemFees` | `Commission` | yes |
-| `ItemFees` | `FBAPerUnitFulfillmentFee` | yes |
-| `ItemFees` | `FBAWeightBasedFee` | yes |
-| `ItemFees` | `GiftwrapChargeback` | yes |
-| `ItemFees` | `ShippingChargeback` | yes |
-| `ItemFees` | `RefundCommission` | yes |
-| `ItemFees` | `VariableClosingFee` | yes |
-| `ItemFees` | `MarketplaceFacilitatorVAT-Principal` | yes |
-| `ItemFees` | `MarketplaceFacilitatorVAT-Shipping` | yes |
-| `ItemFees` | `DigitalServicesFee` | yes |
-| `Shipment-Fees` | `FBAPerOrderFulfillmentFee` | yes |
-| `Shipment-Fees` | `FBATransportationFee` | yes |
-| `other-transaction` | **`Current Reserve Amount`** | yes |
-| `other-transaction` | **`Previous Reserve Amount Balance`** | yes |
-| `other-transaction` | `Storage Fee` | yes |
-| `other-transaction` | `Refund Reimbursal` | yes |
-| `other-transaction` | `StorageRenewalBilling` | yes |
-| `other-transaction` | `DisposalComplete` | yes |
-| `other-transaction` | `ShippingHB` | yes |
-| `other-transaction` | `Subscription Fee` | **no** |
-| `Promotion` | seen as a type; descriptions vary by account | — |
+Source column: **●●** = seen in real reports *and* in third-party documentation · **●** = seen in real reports only · **○** = third-party documentation only, not yet confirmed against a real file.
 
-Two notes on that table:
+**Known** = whether the value is in the parser's built-in `KNOWN` list. Anything not in that list is still shown in full and tagged *unrecognised* — the parser never drops a row it does not know.
 
-- **The two reserve rows in bold are the single most commonly missed item in reconciliation.** Amazon withholds part of the money and releases it in a later period. Compute "order revenue minus fees" without them and your total will never equal the deposit.
-- `Subscription Fee` is documented here but is **not** in the code's `KNOWN.amountDesc` array, so the parser flags it as unrecognised. That is why the sample file yields exactly two unrecognised values. Left as-is deliberately: the reference is allowed to be ahead of the code, and a flagged value is visible rather than silently absorbed.
+**`ItemPrice`** (8 values)
+
+| amount-description | Src | Known | Notes |
+|---|:--:|:--:|---|
+| `GiftWrap` | ●● | yes |  |
+| `GiftWrapTax` | ○ | **no** |  |
+| `Goodwill` | ●● | yes | also seen under `ItemFees` |
+| `Principal` | ●● | yes |  |
+| `RestockingFee` | ●● | yes | also seen under `ItemFees` |
+| `Shipping` | ●● | yes | also seen under `Shipment-Fees` `Promotion` |
+| `ShippingTax` | ●● | yes |  |
+| `Tax` | ●● | yes | also seen under `other-transaction` |
+
+**`ItemFees`** (16 values)
+
+| amount-description | Src | Known | Notes |
+|---|:--:|:--:|---|
+| `Commission` | ●● | yes |  |
+| `DigitalServicesFee` | ● | yes |  |
+| `FBAPerOrderFulfillmentFee` | ●● | yes | also seen under `Shipment-Fees` |
+| `FBAPerUnitFulfillmentFee` | ●● | yes |  |
+| `FBAWeightBasedFee` | ●● | yes |  |
+| `GiftwrapChargeback` | ●● | yes |  |
+| `Goodwill` | ●● | yes | also seen under `ItemPrice` |
+| `MarketplaceFacilitatorVAT-Principal` | ● | yes |  |
+| `MarketplaceFacilitatorVAT-Shipping` | ● | yes |  |
+| `RefundCommission` | ●● | yes |  |
+| `RestockingFee` | ●● | yes | also seen under `ItemPrice` |
+| `ReturnShipping` | ○ | **no** |  |
+| `SalesTaxServiceFee` | ○ | **no** |  |
+| `ShippingChargeback` | ●● | yes |  |
+| `ShippingHB` | ●● | yes | also seen under `other-transaction` |
+| `VariableClosingFee` | ●● | yes |  |
+
+**`Shipment-Fees`** (4 values)
+
+| amount-description | Src | Known | Notes |
+|---|:--:|:--:|---|
+| `FBAPerOrderFulfillmentFee` | ●● | yes | also seen under `ItemFees` |
+| `FBATransportationFee` | ●● | yes |  |
+| `Multi-Channel Fulfillment Brand-Neutral Box Fee` | ○ | **no** |  |
+| `Shipping` | ●● | yes | also seen under `ItemPrice` `Promotion` |
+
+**`other-transaction`** (40 values)
+
+| amount-description | Src | Known | Notes |
+|---|:--:|:--:|---|
+| `Additional Other Expenses` | ○ | **no** |  |
+| `Adjustment` | ○ | **no** |  |
+| `Amazon Capital Services` | ○ | **no** |  |
+| `BalanceAdjustment` | ○ | **no** |  |
+| `CS_ERROR_ITEMS` | ○ | **no** |  |
+| `Current Reserve Amount` | ●● | yes |  |
+| `DisposalComplete` | ●● | yes |  |
+| `Failed Disbursement` | ○ | **no** |  |
+| `FBA Inventory Reimbursement - Customer Return` | ○ | **no** |  |
+| `FBACustomerReturnPerOrderFee` | ○ | **no** |  |
+| `FBACustomerReturnPerUnitFee` | ○ | **no** |  |
+| `FBACustomerReturnWeightBasedFee` | ○ | **no** |  |
+| `FBAInboundTransportationFee` | ○ | **no** |  |
+| `INCORRECT_FEES_ITEMS` | ○ | **no** |  |
+| `INCORRECT_FEES_NON_ITEMIZED` | ○ | **no** |  |
+| `LightningDealFee Special` | ○ | **no** |  |
+| `Manual Processing Fee` | ○ | **no** |  |
+| `Manual Processing Fee Reimbursement` | ○ | **no** |  |
+| `MISSING_FROM_INBOUND` | ○ | **no** |  |
+| `MULTICHANNEL_ORDER_DAMAGED` | ○ | **no** |  |
+| `MULTICHANNEL_ORDER_LATE` | ○ | **no** |  |
+| `MULTICHANNEL_ORDER_LOST` | ○ | **no** |  |
+| `NonSubscriptionFeeAdj` | ○ | **no** |  |
+| `Previous Reserve Amount Balance` | ●● | yes |  |
+| `Refund Reimbursal` | ●● | yes |  |
+| `REMOVAL_ORDER_DAMAGED` | ○ | **no** |  |
+| `RemovalComplete` | ○ | **no** |  |
+| `REVERSAL_REIMBURSEMENT` | ○ | **no** |  |
+| `Shipping label purchase` | ○ | **no** |  |
+| `ShippingHB` | ●● | yes | also seen under `ItemFees` |
+| `ShippingServices` | ○ | **no** |  |
+| `ShippingServicesRefund` | ○ | **no** |  |
+| `Storage Fee` | ●● | yes |  |
+| `StorageRenewalBilling` | ●● | yes |  |
+| `Subscription Fee` | ●● | **no** |  |
+| `Tax` | ●● | yes | also seen under `ItemPrice` |
+| `TransactionTotalAmount` | ○ | **no** |  |
+| `WAREHOUSE_DAMAGE` | ○ | **no** |  |
+| `WAREHOUSE_DAMAGE_EXCEPTION` | ○ | **no** |  |
+| `WAREHOUSE_LOST` | ○ | **no** |  |
+
+**`Promotion`** (1 value)
+
+| amount-description | Src | Known | Notes |
+|---|:--:|:--:|---|
+| `Shipping` | ●● | yes | also seen under `ItemPrice` `Shipment-Fees` |
+
+**Values with no confident amount-type** (2 values)
+
+| amount-description | Src | Known | Notes |
+|---|:--:|:--:|---|
+| `Balance Adjustment` | ○ | **no** |  |
+| `Merchant Bad Debt` | ○ | **no** |  |
+
+#### The same description appears under different amount-types
+
+This is the most important thing on this page. Six values are filed differently depending on source and context:
+
+| amount-description | Seen in real reports | Webgility |
+|---|---|---|
+| `FBAPerOrderFulfillmentFee` | `Shipment-Fees` | `ItemFees` |
+| `Goodwill` | `ItemPrice` | `ItemFees` |
+| `RestockingFee` | `ItemPrice` | `ItemFees` |
+| `Shipping` | `ItemPrice` | `Shipment-Fees` `ItemPrice` `Promotion` |
+| `ShippingHB` | `other-transaction` | `ItemFees` |
+| `Tax` | `ItemPrice` | `other-transaction` |
+
+**Do not key on `amount-description` alone.** `Shipping` alone shows up under `ItemPrice`, `Shipment-Fees` and `Promotion`, plus a refund context. Always read the `amount-type` on the same row.
+
+Where the two sources disagree, both placements are listed rather than one being silently picked. The disagreement is real data, not noise: Webgility groups fees under its own labels for accounting export, so its placement is medium-confidence, while values marked ● or ●● were observed directly in settlement files.
 
 ### What Amazon does not document
 
@@ -205,45 +295,135 @@ Stated plainly, because a reconciliation tool that overstates itself is worse th
 
 工具的退款判定是启发式的：`transaction-type` 里含 `refund`（不分大小写）。请对照工具为你自己文件打印出的取值清单核一下。
 
+还有一个值得知道的取值：**`Order_Retrocharge`**。2022 年有卖家在亚马逊自己的 `amzn/selling-partner-api-models` 仓库提了 issue #2345，问 XML 格式里的 `Retrocharge` 到 Flat File V2 该怎么找。**亚马逊全程没有回复**，帖子最后被机器人以长期无人关注自动关闭，提问者也没能在自己的文件里找到这个值。所以这个取值算未证实——它同时也很能说明这几个字段的文档现状。
+
+另外，亚马逊官方的 V1 → V2 迁移映射表自己写着：旧的 `transaction-type` 映射到「**transaction-type 或 amount-description**」，还有一行注着「disjointed amounts may be consolidated」。**只读 `transaction-type` 那一列的解析器会漏行，而且不报错。**
+
 ### `amount-type` → `amount-description`
 
-实际观察到的对应关系。**已收录**指该取值在工具内置的 `KNOWN` 清单里；不在清单里的取值照样完整显示并标注「未识别」——**工具绝不静默丢弃任何它不认识的行**。
+**64 个已观察取值。** 机器可读的正本在 [`data/fee-codes.json`](data/fee-codes.json)，下面这张表由它生成。
 
-| `amount-type` | `amount-description` | 已收录 |
-|---|---|:--:|
-| `ItemPrice` | `Principal` | 是 |
-| `ItemPrice` | `Shipping` | 是 |
-| `ItemPrice` | `GiftWrap` | 是 |
-| `ItemPrice` | `Goodwill` | 是 |
-| `ItemPrice` | `RestockingFee` | 是 |
-| `ItemPrice` | `Tax` | 是 |
-| `ItemPrice` | `ShippingTax` | 是 |
-| `ItemFees` | `Commission` | 是 |
-| `ItemFees` | `FBAPerUnitFulfillmentFee` | 是 |
-| `ItemFees` | `FBAWeightBasedFee` | 是 |
-| `ItemFees` | `GiftwrapChargeback` | 是 |
-| `ItemFees` | `ShippingChargeback` | 是 |
-| `ItemFees` | `RefundCommission` | 是 |
-| `ItemFees` | `VariableClosingFee` | 是 |
-| `ItemFees` | `MarketplaceFacilitatorVAT-Principal` | 是 |
-| `ItemFees` | `MarketplaceFacilitatorVAT-Shipping` | 是 |
-| `ItemFees` | `DigitalServicesFee` | 是 |
-| `Shipment-Fees` | `FBAPerOrderFulfillmentFee` | 是 |
-| `Shipment-Fees` | `FBATransportationFee` | 是 |
-| `other-transaction` | **`Current Reserve Amount`** | 是 |
-| `other-transaction` | **`Previous Reserve Amount Balance`** | 是 |
-| `other-transaction` | `Storage Fee` | 是 |
-| `other-transaction` | `Refund Reimbursal` | 是 |
-| `other-transaction` | `StorageRenewalBilling` | 是 |
-| `other-transaction` | `DisposalComplete` | 是 |
-| `other-transaction` | `ShippingHB` | 是 |
-| `other-transaction` | `Subscription Fee` | **否** |
-| `Promotion` | 见过这个类型，具体描述各账号不同 | — |
+来源列：**●●** = 真实报告和第三方文档都出现过 · **●** = 仅在真实报告里见过 · **○** = 仅见于第三方文档，尚未在真实文件里核实。
 
-关于这张表的两点说明：
+**工具已收录** = 该取值是否在解析器内置的 `KNOWN` 清单里。不在清单里的照样完整显示并标注「未识别」，工具绝不丢弃它不认识的行。
 
-- **加粗的两行储备金是对账里最常被漏掉的一项。** 亚马逊会压一部分钱到下一期再放。只算「订单收入减各项费用」不算储备金，总数永远等不上实际打款。
-- `Subscription Fee` 收录在这张表里，但**不在**代码的 `KNOWN.amountDesc` 数组里，所以工具会把它标成未识别——这正是样本文件恰好产生两个未识别取值的原因。这里刻意保持原样：对照表允许比代码清单走得更前，而被标出来总好过被悄悄吸收掉。
+**`ItemPrice`** (8 个)
+
+| amount-description | 来源 | 工具已收录 | 备注 |
+|---|:--:|:--:|---|
+| `GiftWrap` | ●● | 是 |  |
+| `GiftWrapTax` | ○ | **否** |  |
+| `Goodwill` | ●● | 是 | 也出现在 `ItemFees` 下 |
+| `Principal` | ●● | 是 |  |
+| `RestockingFee` | ●● | 是 | 也出现在 `ItemFees` 下 |
+| `Shipping` | ●● | 是 | 也出现在 `Shipment-Fees` `Promotion` 下 |
+| `ShippingTax` | ●● | 是 |  |
+| `Tax` | ●● | 是 | 也出现在 `other-transaction` 下 |
+
+**`ItemFees`** (16 个)
+
+| amount-description | 来源 | 工具已收录 | 备注 |
+|---|:--:|:--:|---|
+| `Commission` | ●● | 是 |  |
+| `DigitalServicesFee` | ● | 是 |  |
+| `FBAPerOrderFulfillmentFee` | ●● | 是 | 也出现在 `Shipment-Fees` 下 |
+| `FBAPerUnitFulfillmentFee` | ●● | 是 |  |
+| `FBAWeightBasedFee` | ●● | 是 |  |
+| `GiftwrapChargeback` | ●● | 是 |  |
+| `Goodwill` | ●● | 是 | 也出现在 `ItemPrice` 下 |
+| `MarketplaceFacilitatorVAT-Principal` | ● | 是 |  |
+| `MarketplaceFacilitatorVAT-Shipping` | ● | 是 |  |
+| `RefundCommission` | ●● | 是 |  |
+| `RestockingFee` | ●● | 是 | 也出现在 `ItemPrice` 下 |
+| `ReturnShipping` | ○ | **否** |  |
+| `SalesTaxServiceFee` | ○ | **否** |  |
+| `ShippingChargeback` | ●● | 是 |  |
+| `ShippingHB` | ●● | 是 | 也出现在 `other-transaction` 下 |
+| `VariableClosingFee` | ●● | 是 |  |
+
+**`Shipment-Fees`** (4 个)
+
+| amount-description | 来源 | 工具已收录 | 备注 |
+|---|:--:|:--:|---|
+| `FBAPerOrderFulfillmentFee` | ●● | 是 | 也出现在 `ItemFees` 下 |
+| `FBATransportationFee` | ●● | 是 |  |
+| `Multi-Channel Fulfillment Brand-Neutral Box Fee` | ○ | **否** |  |
+| `Shipping` | ●● | 是 | 也出现在 `ItemPrice` `Promotion` 下 |
+
+**`other-transaction`** (40 个)
+
+| amount-description | 来源 | 工具已收录 | 备注 |
+|---|:--:|:--:|---|
+| `Additional Other Expenses` | ○ | **否** |  |
+| `Adjustment` | ○ | **否** |  |
+| `Amazon Capital Services` | ○ | **否** |  |
+| `BalanceAdjustment` | ○ | **否** |  |
+| `CS_ERROR_ITEMS` | ○ | **否** |  |
+| `Current Reserve Amount` | ●● | 是 |  |
+| `DisposalComplete` | ●● | 是 |  |
+| `Failed Disbursement` | ○ | **否** |  |
+| `FBA Inventory Reimbursement - Customer Return` | ○ | **否** |  |
+| `FBACustomerReturnPerOrderFee` | ○ | **否** |  |
+| `FBACustomerReturnPerUnitFee` | ○ | **否** |  |
+| `FBACustomerReturnWeightBasedFee` | ○ | **否** |  |
+| `FBAInboundTransportationFee` | ○ | **否** |  |
+| `INCORRECT_FEES_ITEMS` | ○ | **否** |  |
+| `INCORRECT_FEES_NON_ITEMIZED` | ○ | **否** |  |
+| `LightningDealFee Special` | ○ | **否** |  |
+| `Manual Processing Fee` | ○ | **否** |  |
+| `Manual Processing Fee Reimbursement` | ○ | **否** |  |
+| `MISSING_FROM_INBOUND` | ○ | **否** |  |
+| `MULTICHANNEL_ORDER_DAMAGED` | ○ | **否** |  |
+| `MULTICHANNEL_ORDER_LATE` | ○ | **否** |  |
+| `MULTICHANNEL_ORDER_LOST` | ○ | **否** |  |
+| `NonSubscriptionFeeAdj` | ○ | **否** |  |
+| `Previous Reserve Amount Balance` | ●● | 是 |  |
+| `Refund Reimbursal` | ●● | 是 |  |
+| `REMOVAL_ORDER_DAMAGED` | ○ | **否** |  |
+| `RemovalComplete` | ○ | **否** |  |
+| `REVERSAL_REIMBURSEMENT` | ○ | **否** |  |
+| `Shipping label purchase` | ○ | **否** |  |
+| `ShippingHB` | ●● | 是 | 也出现在 `ItemFees` 下 |
+| `ShippingServices` | ○ | **否** |  |
+| `ShippingServicesRefund` | ○ | **否** |  |
+| `Storage Fee` | ●● | 是 |  |
+| `StorageRenewalBilling` | ●● | 是 |  |
+| `Subscription Fee` | ●● | **否** |  |
+| `Tax` | ●● | 是 | 也出现在 `ItemPrice` 下 |
+| `TransactionTotalAmount` | ○ | **否** |  |
+| `WAREHOUSE_DAMAGE` | ○ | **否** |  |
+| `WAREHOUSE_DAMAGE_EXCEPTION` | ○ | **否** |  |
+| `WAREHOUSE_LOST` | ○ | **否** |  |
+
+**`Promotion`** (1 个)
+
+| amount-description | 来源 | 工具已收录 | 备注 |
+|---|:--:|:--:|---|
+| `Shipping` | ●● | 是 | 也出现在 `ItemPrice` `Shipment-Fees` 下 |
+
+**暂无可靠 amount-type 归属** (2 个)
+
+| amount-description | 来源 | 工具已收录 | 备注 |
+|---|:--:|:--:|---|
+| `Balance Adjustment` | ○ | **否** |  |
+| `Merchant Bad Debt` | ○ | **否** |  |
+
+#### 同一个 description 会挂在不同的 amount-type 下
+
+这是这一页最重要的一件事。有六个取值，按来源和上下文归属不同：
+
+| amount-description | 真实报告观察 | Webgility |
+|---|---|---|
+| `FBAPerOrderFulfillmentFee` | `Shipment-Fees` | `ItemFees` |
+| `Goodwill` | `ItemPrice` | `ItemFees` |
+| `RestockingFee` | `ItemPrice` | `ItemFees` |
+| `Shipping` | `ItemPrice` | `Shipment-Fees` `ItemPrice` `Promotion` |
+| `ShippingHB` | `other-transaction` | `ItemFees` |
+| `Tax` | `ItemPrice` | `other-transaction` |
+
+**不要只按 `amount-description` 归类。** 光是 `Shipping` 就同时出现在 `ItemPrice`、`Shipment-Fees`、`Promotion` 三处，退款场景下还有一处。**必须连同同一行的 `amount-type` 一起读。**
+
+两个来源打架的地方，我把两种归属都列出来，不替你挑一个。这个分歧本身就是数据，不是噪音：Webgility 是按自己的记账口径分组的，所以它的归属只能算中等置信；标 ● 或 ●● 的是直接在结算文件里看到的。
 
 ### 官方没说的六件事
 
