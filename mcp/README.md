@@ -4,23 +4,12 @@ Exposes this repository's fee-code reference and a settlement-report reconciliat
 
 It reads [`../data/fee-codes.json`](../data/fee-codes.json) — the same file the README tables are generated from — and makes no network requests.
 
-## Install
-
-```sh
-cd mcp
-npm install
-```
-
-Node 18 or newer.
+Node 18 or newer. Published as [`amazon-settlement-mcp`](https://www.npmjs.com/package/amazon-settlement-mcp) — nothing to clone or install.
 
 ## Use it from Claude Code
 
-The repository ships a project-scoped [`.mcp.json`](../.mcp.json), so opening this directory in Claude Code offers the server automatically. Approve it once when prompted.
-
-To register it globally instead, from any directory:
-
 ```sh
-claude mcp add amazon-settlement -- node /absolute/path/to/amazon-settlement-parser/mcp/index.js
+claude mcp add amazon-settlement -- npx -y amazon-settlement-mcp
 ```
 
 ## Use it from Claude Desktop
@@ -31,12 +20,23 @@ Add this to `claude_desktop_config.json`:
 {
   "mcpServers": {
     "amazon-settlement": {
-      "command": "node",
-      "args": ["/absolute/path/to/amazon-settlement-parser/mcp/index.js"]
+      "command": "npx",
+      "args": ["-y", "amazon-settlement-mcp"]
     }
   }
 }
 ```
+
+## Run it from a clone instead
+
+Working on the reference data itself, or want to read the code before running it:
+
+```sh
+cd mcp
+npm install
+```
+
+The repository ships a project-scoped [`.mcp.json`](../.mcp.json), so opening it in Claude Code offers the server automatically — approve it once when prompted. A clone reads [`../data/fee-codes.json`](../data/fee-codes.json) directly, so edits to the reference take effect immediately; the npm package carries a copy made at publish time.
 
 ## Tools
 

@@ -5,13 +5,17 @@
   "license": "CC-BY-4.0",
   "type": "module",
   "bin": {
-    "amazon-settlement-mcp": "./index.js"
+    "amazon-settlement-mcp": "index.js"
   },
-  "main": "./index.js",
+  "main": "index.js",
   "files": [
     "index.js",
+    "fee-codes.json",
     "README.md"
   ],
+  "scripts": {
+    "prepack": "node -e \"require('fs').copyFileSync('../data/fee-codes.json','fee-codes.json')\""
+  },
   "engines": {
     "node": ">=18"
   },

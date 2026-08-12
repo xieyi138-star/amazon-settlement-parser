@@ -15,8 +15,10 @@ import { z } from 'zod';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 
-// Prefer a vendored copy (npm package), fall back to the repository layout.
-const DATA_PATH = [join(HERE, 'fee-codes.json'), join(HERE, '..', 'data', 'fee-codes.json')]
+// In the repository, always read the canonical file so a stale packed copy can
+// never shadow it. The copy beside index.js exists only inside the published
+// npm package, where ../data/ is not shipped.
+const DATA_PATH = [join(HERE, '..', 'data', 'fee-codes.json'), join(HERE, 'fee-codes.json')]
   .find((p) => existsSync(p));
 if (!DATA_PATH) {
   console.error('fee-codes.json not found next to index.js or in ../data/');

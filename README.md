@@ -38,7 +38,7 @@ Loading it should produce: declared total `582.89`, sum of rows `582.89`, differ
 [`mcp/`](mcp/) exposes the fee-code reference and a reconciliation checker to Claude Code, Claude Desktop, or any other MCP client — so an agent working on a settlement report can verify values instead of guessing at them.
 
 ```sh
-cd mcp && npm install
+claude mcp add amazon-settlement -- npx -y amazon-settlement-mcp
 ```
 
 Three tools: `lookup_fee_code`, `list_fee_codes`, and `check_settlement_report` — which reconciles a report and reports the failure modes that produce a plausible wrong number rather than an error. Setup and full tool documentation: [`mcp/README.md`](mcp/README.md).
@@ -281,7 +281,7 @@ Stated plainly, because a reconciliation tool that overstates itself is worse th
 [`mcp/`](mcp/) 把这张对照表和一个对账检查器暴露给 Claude Code、Claude Desktop 或任何 MCP 客户端——让 agent 在处理结算报告时**能去核实取值，而不是猜**。
 
 ```sh
-cd mcp && npm install
+claude mcp add amazon-settlement -- npx -y amazon-settlement-mcp
 ```
 
 三个工具：`lookup_fee_code`、`list_fee_codes`，以及 `check_settlement_report`——后者跑完整对账，并专门报出那些**不报错、只给你一个看着合理的错数**的失败模式。安装方法和完整工具说明见 [`mcp/README.md`](mcp/README.md)。

@@ -1,1 +1,3 @@
 node_modules/
+# generated at pack time from ../data/fee-codes.json — never edit or commit
+fee-codes.json
