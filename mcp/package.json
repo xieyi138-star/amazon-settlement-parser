@@ -1,0 +1,22 @@
+{
+  "name": "amazon-settlement-mcp",
+  "version": "1.0.0",
+  "description": "MCP server exposing the Amazon Flat File V2 settlement-report fee-code reference and a reconciliation checker. Reads data/fee-codes.json from this repository.",
+  "license": "CC-BY-4.0",
+  "type": "module",
+  "bin": {
+    "amazon-settlement-mcp": "./index.js"
+  },
+  "main": "./index.js",
+  "files": [
+    "index.js",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "zod": "^4.0.0"
+  }
+}

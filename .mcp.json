@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "amazon-settlement": {
+      "command": "node",
+      "args": ["mcp/index.js"]
+    }
+  }
+}
