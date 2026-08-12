@@ -1,7 +1,26 @@
 {
   "name": "amazon-settlement-mcp",
-  "version": "1.0.0",
-  "description": "MCP server exposing the Amazon Flat File V2 settlement-report fee-code reference and a reconciliation checker. Reads data/fee-codes.json from this repository.",
+  "version": "0.1.0",
+  "description": "MCP server for Amazon Flat File V2 settlement reports: look up the fee codes Amazon never published, and reconcile a report to catch the mistakes that do not raise an error. Runs locally, makes no network requests.",
+  "keywords": [
+    "mcp",
+    "modelcontextprotocol",
+    "amazon",
+    "settlement-report",
+    "flat-file-v2",
+    "reconciliation",
+    "seller-central",
+    "fba"
+  ],
+  "homepage": "https://github.com/xieyi138-star/amazon-settlement-parser#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xieyi138-star/amazon-settlement-parser.git",
+    "directory": "mcp"
+  },
+  "bugs": {
+    "url": "https://github.com/xieyi138-star/amazon-settlement-parser/issues"
+  },
   "license": "CC-BY-4.0",
   "type": "module",
   "bin": {
