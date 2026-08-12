@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Amazon Settlement Report Parser — free, runs entirely in your browser</title>
+<meta name="description" content="Drop your Amazon Flat File V2 settlement report and see exactly how your payout was calculated: fee breakdown, reserve amounts, out-of-period postings, per-SKU net. Nothing is uploaded. Includes a field and fee-code reference Amazon does not publish.">
+<link rel="canonical" href="https://nexusaistart.com/tools/amazon-settlement-parser/">
+<link rel="alternate" hreflang="en" href="https://nexusaistart.com/tools/amazon-settlement-parser/">
+<link rel="alternate" hreflang="zh" href="https://nexusaistart.com/zh/tools/amazon-settlement-parser/">
+<link rel="alternate" hreflang="x-default" href="https://nexusaistart.com/tools/amazon-settlement-parser/">
+<style>
+:root{--bg:#0f1115;--card:#171a21;--line:#262b36;--fg:#e6e9ef;--dim:#8b93a3;--warn:#e8a33d;--bad:#e35d5d;--ok:#4caf7d;--acc:#5b9cf8}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.65 -apple-system,"Segoe UI",Roboto,sans-serif;padding:24px}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:26px;margin:0 0 6px;line-height:1.25}
+h2{font-size:19px;margin:34px 0 10px}
+h3{font-size:15px;margin:22px 0 6px}
+.lede{color:var(--dim);font-size:16px;margin-bottom:20px}
+.pledge{background:#12241a;border:1px solid #1f4030;color:#8fdcae;padding:12px 15px;border-radius:8px;font-size:14px;margin-bottom:20px}
+#drop{border:2px dashed var(--line);border-radius:12px;padding:52px 20px;text-align:center;color:var(--dim);cursor:pointer;transition:.15s}
+#drop:hover,#drop.on{border-color:var(--acc);color:var(--fg);background:#151a24}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin:16px 0}
+.card h2{font-size:15px;margin:0 0 12px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0}
+th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--dim);font-weight:600}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.neg{color:var(--bad)}.pos{color:var(--ok)}
+.tag{font-size:11px;padding:1px 6px;border-radius:4px;background:#232833;color:var(--dim)}
+.warn{border-color:#4a3a1a}.bad{border-color:#4a2020}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.kv div{background:#12151c;border-radius:8px;padding:10px 12px}
+.kv .lbl{color:var(--dim);font-size:12px}
+.kv .val{font-size:16px;font-variant-numeric:tabular-nums;margin-top:2px}
+.sub2{color:var(--dim);font-size:13px;margin-top:8px}
+.grp{margin-top:14px}.grp>.gh{font-size:13px;color:var(--acc);margin-bottom:4px}
+code{background:#12151c;padding:1px 5px;border-radius:4px;font-size:12.5px;word-break:break-word}
+hr{border:0;border-top:1px solid var(--line);margin:44px 0}
+.ref p{color:#c3c9d4}
+.ref .note{color:var(--dim);font-size:13.5px}
+.cta{background:#101a2b;border:1px solid #23405f;border-radius:10px;padding:16px 18px;margin:28px 0}
+.upd{color:var(--dim);font-size:12.5px}
+a{color:var(--acc)}
+
+/* 窄屏：宽表格在卡片内横向滚动，不撑破页面（新增，未改动任何现有规则） */
+@media(max-width:520px){.card{overflow-x:auto}}
+</style>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+{"@type":"SoftwareApplication","name":"Amazon Settlement Report Parser","applicationCategory":"BusinessApplication","operatingSystem":"Any (runs in browser)","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Parses an Amazon Flat File V2 settlement report entirely client-side and shows fee composition, reserve amounts, out-of-period postings and per-SKU net."},
+{"@type":"Dataset","name":"Amazon Settlement Report (Flat File V2) field and fee-code reference","description":"Column list, observed values for transaction-type, amount-type and amount-description, and documented gaps in Amazon's official documentation.","license":"https://creativecommons.org/licenses/by/4.0/"},
+{"@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"Why does my Amazon settlement report not match my actual payout?","acceptedAnswer":{"@type":"Answer","text":"The most commonly missed item is the reserve. Under amount-type other-transaction there are Current Reserve Amount and Previous Reserve Amount Balance rows. Amazon holds part of your money back and releases it in a later period. If you only compute order revenue minus fees, the reserve is missing and the total will never match."}},
+{"@type":"Question","name":"Does Amazon publish the list of possible transaction-type values?","acceptedAnswer":{"@type":"Answer","text":"No. Amazon's SP-API documentation page for settlement report types lists the 24 column names but does not publish an enumeration of permitted values for transaction-type, amount-type or amount-description."}},
+{"@type":"Question","name":"How long are Amazon settlement reports available?","acceptedAnswer":{"@type":"Answer","text":"Flat File V2 settlement reports are generated automatically by Amazon and cannot be requested on demand. Seller Central retains roughly the last 90 days, which is about six settlement periods."}}]}]}
+</script>
+</head>
+<body><div class="wrap">
+
+<h1>Amazon Settlement Report Parser</h1>
+<div class="lede">Drop your Flat File V2 settlement report and see exactly how the payout was built — fee breakdown, reserves, out-of-period postings, per-SKU net. Free, no sign-up.</div>
+<div style="font-size:13px;margin-bottom:18px"><a href="https://nexusaistart.com/zh/tools/amazon-settlement-parser/">中文</a> · <a href="https://nexusaistart.com/">Home</a></div>
+
+<div class="pledge">
+🔒 <b>Your file never leaves this computer.</b> Everything is parsed in your browser — there is no upload, no server, no analytics call. Disconnect from the internet and it still works. Open DevTools → Network and check for yourself.
+</div>
+
+<div id="drop">Drop your settlement report here, or click to choose<br>
+<span style="font-size:13px">Seller Central → Payments → All Statements → <b>Download Flat File V2</b> (.txt or .csv — the contents are tab-separated)</span></div>
+<input type="file" id="fi" hidden accept=".txt,.csv,.tsv,text/plain">
+
+<div id="out"></div>
+
+<script>
+/* ============================================================
+   EDITABLE CONFIG
+   Amazon does not publish enumerations for transaction-type,
+   amount-type or amount-description. The values below are
+   collected from third-party documentation and from real reports.
+   Anything not listed here is still shown — never filtered out.
+   ============================================================ */
+const KNOWN = {
+  amountType: ['ItemPrice','ItemFees','other-transaction','Promotion','Shipment-Fees'],
+  amountDesc: ['Principal','Shipping','GiftWrap','Goodwill','RestockingFee',
+    'Commission','FBAPerUnitFulfillmentFee','FBAWeightBasedFee','GiftwrapChargeback',
+    'ShippingChargeback','RefundCommission','VariableClosingFee',
+    'FBAPerOrderFulfillmentFee','FBATransportationFee',
+    'Current Reserve Amount','Previous Reserve Amount Balance','Storage Fee','Refund Reimbursal',
+    'Tax','ShippingTax','MarketplaceFacilitatorVAT-Principal','MarketplaceFacilitatorVAT-Shipping',
+    'DigitalServicesFee','StorageRenewalBilling','DisposalComplete','ShippingHB'],
+  txType: []   // no official source found — every value is reported as-is
+};
+const RESERVE_KEYS=['Current Reserve Amount','Previous Reserve Amount Balance'];
+const COLS=['settlement-id','settlement-start-date','settlement-end-date','deposit-date','total-amount','currency','transaction-type','order-id','merchant-order-id','adjustment-id','shipment-id','marketplace-name','amount-type','amount-description','amount','fulfillment-id','posted-date','posted-date-time','order-item-code','merchant-order-item-id','merchant-adjustment-item-id','sku','quantity-purchased','promotion-id'];
+
+const $=s=>document.querySelector(s),out=$('#out'),drop=$('#drop'),fi=$('#fi');
+drop.onclick=()=>fi.click();
+fi.onchange=e=>e.target.files[0]&&load(e.target.files[0]);
+['dragenter','dragover'].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.add('on')}));
+['dragleave','drop'].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.remove('on')}));
+drop.addEventListener('drop',e=>{e.dataTransfer.files[0]&&load(e.dataTransfer.files[0])});
+
+function load(file){const fr=new FileReader();
+  fr.onload=()=>{try{render(parse(decode(fr.result)),file.name)}catch(err){out.innerHTML=`<div class="card bad"><h2>Could not parse this file</h2><pre>${esc(err.message)}</pre></div>`}};
+  fr.readAsArrayBuffer(file);}
+
+/* Amazon documents no character encoding — try UTF-8, fall back on replacement-char density */
+function decode(buf){const u8=new TextDecoder('utf-8',{fatal:false}).decode(buf);
+  const bad=(u8.match(/�/g)||[]).length;
+  if(bad>0&&bad/u8.length>0.0005){try{return{text:new TextDecoder('windows-1252').decode(buf),enc:'windows-1252 (UTF-8 produced '+bad+' replacement chars, fell back)'}}catch(e){}}
+  return{text:u8,enc:'UTF-8'+(bad?` (${bad} replacement chars — check this)`:'')};}
+
+/* Officially tab-delimited; extension is unreliable, so detect from the first lines */
+function parse({text,enc}){const lines=text.replace(/\r\n?/g,'\n').split('\n').filter(l=>l.length);
+  if(!lines.length)throw new Error('Empty file');
+  const probe=lines.slice(0,5).join('\n');
+  const delim=(probe.split('\t').length>=probe.split(',').length)?'\t':',';
+  const head=lines[0].split(delim).map(s=>s.trim().replace(/^"|"$/g,''));
+  const idx={};head.forEach((h,i)=>idx[h]=i);
+  const missing=COLS.filter(c=>!(c in idx));
+  const rows=[];
+  for(let i=1;i<lines.length;i++){const c=lines[i].split(delim);const o={};
+    head.forEach((h,j)=>o[h]=(c[j]??'').trim().replace(/^"|"$/g,''));rows.push(o);}
+  return{rows,head,delim:delim==='\t'?'TAB':'comma',enc,missing};}
+
+const num=v=>{const n=parseFloat(String(v).replace(/[^0-9.\-]/g,''));return isNaN(n)?0:n};
+const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const money=n=>`<span class="${n<0?'neg':'pos'}">${n<0?'-':''}${Math.abs(n).toFixed(2)}</span>`;
+const D=s=>{const t=Date.parse(String(s).replace(/ UTC$/,'Z'));return isNaN(t)?null:t};
+
+function render(P,fname){const{rows}=P;
+  const isSum=r=>!r['transaction-type']&&!r['amount'];
+  const sumRows=rows.filter(isSum),dataRows=rows.filter(r=>!isSum(r));
+  const meta=sumRows[0]||rows[0]||{};
+  const declared=sumRows.reduce((a,r)=>a+num(r['total-amount']),0)||num(meta['total-amount']);
+  const start=meta['settlement-start-date'],end=meta['settlement-end-date'];
+  const sT=D(start),eT=D(end);
+  const byCur={};dataRows.forEach(r=>{const c=r['currency']||'(blank)';(byCur[c]=byCur[c]||[]).push(r)});
+  const curs=Object.keys(byCur);
+  let h='';
+
+  h+=`<div class="card"><h2>1 · Settlement overview</h2><div class="kv">
+    <div><div class="lbl">File</div><div class="val" style="font-size:13px">${esc(fname)}</div></div>
+    <div><div class="lbl">settlement-id</div><div class="val" style="font-size:13px">${esc(meta['settlement-id']||'—')}</div></div>
+    <div><div class="lbl">Settlement period</div><div class="val" style="font-size:13px">${esc(start||'—')} → ${esc(end||'—')}</div></div>
+    <div><div class="lbl">deposit-date</div><div class="val" style="font-size:13px">${esc(meta['deposit-date']||'—')}</div></div>
+    <div><div class="lbl">Detail rows</div><div class="val">${dataRows.length}</div></div>
+    <div><div class="lbl">Summary rows</div><div class="val">${sumRows.length}</div></div>
+  </div><div class="sub2">Delimiter: ${P.delim} · Encoding: ${esc(P.enc)}${P.missing.length?` · <span class="neg">${P.missing.length} official column(s) missing: ${esc(P.missing.join(', '))}</span>`:' · all 24 official columns present'}</div></div>`;
+
+  curs.forEach(cur=>{const rs=byCur[cur];const calc=rs.reduce((a,r)=>a+num(r['amount']),0);
+    const diff=curs.length===1?(calc-declared):null;
+    h+=`<div class="card ${diff!==null&&Math.abs(diff)>0.01?'warn':''}"><h2>2 · Total reconciliation <span class="tag">${esc(cur)}</span></h2><div class="kv">
+      <div><div class="lbl">Declared total-amount</div><div class="val">${curs.length===1?money(declared):'— (multi-currency)'}</div></div>
+      <div><div class="lbl">Sum of amount rows</div><div class="val">${money(calc)}</div></div>
+      <div><div class="lbl">Difference</div><div class="val">${diff===null?'—':money(diff)}</div></div>
+    </div>${diff!==null&&Math.abs(diff)>0.01?`<div class="sub2">⚠️ These do not agree. Usual causes: reserve rows excluded, the summary row counted twice, or a row type this parser did not recognise (see section 5).</div>`:''}</div>`;});
+
+  if(curs.length>1)h+=`<div class="card bad"><h2>⚠️ Multiple currencies</h2>This file contains ${curs.length} currencies: <code>${curs.map(esc).join('</code> <code>')}</code>.
+    Flat File V2 has a single <code>currency</code> column and <b>no exchange-rate column</b>, so every figure below is reported per currency and <b>never summed across currencies</b>.
+    <div class="sub2">This is a common source of ERP reconciliation error.</div></div>`;
+
+  curs.forEach(cur=>{const rs=byCur[cur],tree={};
+    rs.forEach(r=>{const t=r['amount-type']||'(blank)',d=r['amount-description']||'(blank)';
+      tree[t]=tree[t]||{sum:0,n:0,kids:{}};tree[t].sum+=num(r['amount']);tree[t].n++;
+      tree[t].kids[d]=tree[t].kids[d]||{sum:0,n:0};tree[t].kids[d].sum+=num(r['amount']);tree[t].kids[d].n++;});
+    h+=`<div class="card"><h2>3 · Fee composition <span class="tag">${esc(cur)}</span></h2>`;
+    Object.entries(tree).sort((a,b)=>a[1].sum-b[1].sum).forEach(([t,v])=>{
+      const unk=!KNOWN.amountType.includes(t)&&t!=='(blank)';
+      h+=`<div class="grp"><div class="gh">${esc(t)} ${unk?'<span class="tag" style="color:#e8a33d">unrecognised</span>':''} · ${v.n} rows · ${money(v.sum)}</div><table><tr><th>amount-description</th><th class="n">rows</th><th class="n">amount</th></tr>`;
+      Object.entries(v.kids).sort((a,b)=>a[1].sum-b[1].sum).forEach(([d,k])=>{
+        const u=!KNOWN.amountDesc.includes(d)&&d!=='(blank)';
+        h+=`<tr><td>${esc(d)}${u?' <span class="tag" style="color:#e8a33d">unrecognised</span>':''}</td><td class="n">${k.n}</td><td class="n">${money(k.sum)}</td></tr>`;});
+      h+='</table></div>';});
+    h+='</div>';});
+
+  const res=dataRows.filter(r=>RESERVE_KEYS.includes(r['amount-description']));
+  h+=`<div class="card ${res.length?'warn':''}"><h2>4 · Reserve</h2>`;
+  if(res.length){const t={};res.forEach(r=>{const k=r['amount-description']+'|'+(r['currency']||'');t[k]=(t[k]||0)+num(r['amount'])});
+    h+='<table><tr><th>Item</th><th>Currency</th><th class="n">Amount</th></tr>';
+    Object.entries(t).forEach(([k,v])=>{const[d,c]=k.split('|');h+=`<tr><td>${esc(d)}</td><td>${esc(c)}</td><td class="n">${money(v)}</td></tr>`});
+    h+=`</table><div class="sub2">⚠️ Amazon holds part of your money back and releases it in a later period. <b>If you compute "order revenue minus fees" and ignore the reserve, your total will never match the actual deposit.</b></div>`;}
+  else h+=`<div class="sub2">No reserve rows found in this period (<code>${RESERVE_KEYS.join('</code> / <code>')}</code>). If your deposit still doesn't match, there may be a value this parser hasn't seen — the list in section 5 will show it.</div>`;
+  h+='</div>';
+
+  const unkT={},unkA={},unkD={};
+  dataRows.forEach(r=>{const t=r['transaction-type'],a=r['amount-type'],d=r['amount-description'];
+    if(t)unkT[t]=(unkT[t]||0)+1;
+    if(a&&!KNOWN.amountType.includes(a))unkA[a]=(unkA[a]||0)+1;
+    if(d&&!KNOWN.amountDesc.includes(d))unkD[d]=(unkD[d]||0)+1;});
+  h+=`<div class="card ${Object.keys(unkA).length||Object.keys(unkD).length?'warn':''}"><h2>5 · Value inventory — nothing is filtered out</h2>
+  <div class="sub2" style="margin:0 0 10px">Amazon <b>does not publish</b> an enumeration for <code>transaction-type</code>, <code>amount-type</code> or <code>amount-description</code>. This parser therefore hard-codes nothing: every value in your file appears below, including ones it has never seen.</div>`;
+  const tbl=(title,o,note)=>{if(!Object.keys(o).length)return'';
+    let s=`<div class="grp"><div class="gh">${title}</div><table><tr><th>Value</th><th class="n">Rows</th></tr>`;
+    Object.entries(o).sort((a,b)=>b[1]-a[1]).forEach(([k,v])=>s+=`<tr><td><code>${esc(k)}</code></td><td class="n">${v}</td></tr>`);
+    return s+`</table>${note?`<div class="sub2">${note}</div>`:''}</div>`};
+  h+=tbl('transaction-type — every value, no official enumeration exists',unkT,'The Order / Refund / Transfer / Liquidations list circulating online has no citable source, so no classification is applied here.');
+  h+=tbl('amount-type — not in the known list',unkA,'Please send these to me (<a href="mailto:support@nexusaistart.com?subject=Settlement%20Parser%20%C2%B7%20new%20fee%20code">support@nexusaistart.com</a>) and I will add them to the public reference below.');
+  h+=tbl('amount-description — not in the known list',unkD,'Please send these to me (<a href="mailto:support@nexusaistart.com?subject=Settlement%20Parser%20%C2%B7%20new%20fee%20code">support@nexusaistart.com</a>) and I will add them to the public reference below.');
+  h+='</div>';
+
+  if(sT&&eT){const oob=dataRows.filter(r=>{const p=D(r['posted-date']||r['posted-date-time']);return p&&(p<sT||p>eT)});
+    h+=`<div class="card ${oob.length?'warn':''}"><h2>6 · Postings outside the settlement period</h2>`;
+    if(oob.length){const s=oob.reduce((a,r)=>a+num(r['amount']),0);
+      h+=`<div class="kv"><div><div class="lbl">Rows outside period</div><div class="val">${oob.length}</div></div>
+      <div><div class="lbl">Share</div><div class="val">${(oob.length/dataRows.length*100).toFixed(1)}%</div></div>
+      <div><div class="lbl">Total</div><div class="val">${money(s)}</div></div></div>
+      <div class="sub2">⚠️ <b>This is a frequent cause of ERP-vs-Seller-Central mismatches.</b> If your ERP aggregates by <code>posted-date</code> while Amazon settles by period, the two will differ — most visibly across a month boundary. Aggregate by settlement period, not by posted-date.</div>`;}
+    else h+=`<div class="sub2">Every detail row in this file posted inside the settlement period.</div>`;
+    h+='</div>';}
+
+  curs.forEach(cur=>{const m={};
+    byCur[cur].forEach(r=>{const s=r['sku'];if(!s)return;
+      m[s]=m[s]||{sum:0,n:0,items:new Map()};m[s].sum+=num(r['amount']);m[s].n++;
+      /* quantity-purchased repeats on every row of the same order item —
+         summing it multiplies quantity by row count. De-duplicate first. */
+      const key=(r['order-id']||'')+'|'+(r['order-item-code']||'');
+      const isRef=/refund/i.test(r['transaction-type']||'');
+      if(!m[s].items.has(key))m[s].items.set(key,{qty:num(r['quantity-purchased']),ref:isRef});
+      else{const e=m[s].items.get(key);if(!e.qty)e.qty=num(r['quantity-purchased']);if(isRef)e.ref=true;}});
+    const list=Object.entries(m).sort((a,b)=>a[1].sum-b[1].sum);
+    if(!list.length)return;
+    h+=`<div class="card"><h2>7 · Per SKU <span class="tag">${esc(cur)}</span></h2>
+    <div class="sub2" style="margin:0 0 10px">Order items are counted by <code>order-id + order-item-code</code> — <b>counting by order-id alone merges multi-item orders</b>.
+    Quantity is de-duplicated the same way, because <code>quantity-purchased</code> repeats on every row of an order item and summing it multiplies quantity by row count.<br>
+    Refunds are detected by <code>transaction-type</code> containing "refund" (case-insensitive). <b>Amazon publishes no enumeration for that field, so this is a heuristic</b> — cross-check against the value inventory in section 5.<br>
+    ⚠️ None of the 24 columns contains cost of goods, so this is <b>Amazon-side net, not profit</b>.</div>
+    <table><tr><th>SKU</th><th class="n">Order items</th><th class="n">Sold</th><th class="n">Refunded</th><th class="n">Rows</th><th class="n">Net</th></tr>`;
+    list.slice(0,50).forEach(([s,v])=>{let sold=0,refd=0;
+      v.items.forEach(e=>{if(e.ref)refd+=e.qty;else sold+=e.qty});
+      h+=`<tr><td>${esc(s)}</td><td class="n">${v.items.size}</td><td class="n">${sold}</td><td class="n">${refd?'<span class="neg">'+refd+'</span>':0}</td><td class="n">${v.n}</td><td class="n">${money(v.sum)}</td></tr>`;});
+    h+=`</table>${list.length>50?`<div class="sub2">Showing the 50 lowest by net; ${list.length} SKUs total.</div>`:''}</div>`;});
+
+  h+=`<div class="cta"><b>This is one period, one marketplace account.</b><br>
+  Amazon generates these reports automatically, you cannot request them on demand, and Seller Central keeps roughly the last 90 days — about six periods. After that they are gone for good.<br>
+  If you run several accounts and want them archived every month and merged into one table, get in touch: <a href="mailto:support@nexusaistart.com?subject=Settlement%20Parser">support@nexusaistart.com</a></div>`;
+  out.innerHTML=h;
+  out.scrollIntoView({behavior:'smooth',block:'start'});
+}
+</script>
+
+<hr>
+
+<div class="ref">
+<h2>Amazon Settlement Report (Flat File V2) — field and fee-code reference</h2>
+<p class="upd">Last updated: 2026-08-12 · Column list from Amazon's official SP-API documentation. Value enumerations are <b>not published by Amazon</b> and are collected from third-party documentation and from real reports. Corrections and new values are welcome — they get added here.</p>
+
+<h3>Report type</h3>
+<table>
+<tr><th>Item</th><th>Value</th></tr>
+<tr><td>Current report type</td><td><code>GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2</code> (Seller Central sellers)</td></tr>
+<tr><td>Deprecated</td><td><code>GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE</code>, <code>GET_V2_SETTLEMENT_REPORT_DATA_XML</code></td></tr>
+<tr><td>Delimiter</td><td>Tab</td></tr>
+<tr><td>How it is produced</td><td><b>Automatically scheduled by Amazon — it cannot be requested on demand</b></td></tr>
+<tr><td>Where to download</td><td>Seller Central → Payments → All Statements → Download Flat File V2</td></tr>
+<tr><td>Retention</td><td><b>Roughly the last 90 days</b> (about six settlement periods)</td></tr>
+</table>
+<p class="note">The file extension is commonly <code>.txt</code> or <code>.csv</code> while the contents are tab-separated. Detect the delimiter, do not trust the extension.</p>
+
+<h3>The 24 columns, in order</h3>
+<p><code>settlement-id</code> · <code>settlement-start-date</code> · <code>settlement-end-date</code> · <code>deposit-date</code> · <code>total-amount</code> · <code>currency</code> · <code>transaction-type</code> · <code>order-id</code> · <code>merchant-order-id</code> · <code>adjustment-id</code> · <code>shipment-id</code> · <code>marketplace-name</code> · <code>amount-type</code> · <code>amount-description</code> · <code>amount</code> · <code>fulfillment-id</code> · <code>posted-date</code> · <code>posted-date-time</code> · <code>order-item-code</code> · <code>merchant-order-item-id</code> · <code>merchant-adjustment-item-id</code> · <code>sku</code> · <code>quantity-purchased</code> · <code>promotion-id</code></p>
+<p class="note">Amazon's documentation lists these column names but <b>does not give data types or nullability</b>.</p>
+
+<h3>Observed values for amount-type → amount-description</h3>
+<table>
+<tr><th>amount-type</th><th>amount-description values seen</th></tr>
+<tr><td><code>ItemPrice</code></td><td>Principal · Shipping · GiftWrap · Goodwill · RestockingFee · Tax · ShippingTax</td></tr>
+<tr><td><code>ItemFees</code></td><td>Commission · FBAPerUnitFulfillmentFee · FBAWeightBasedFee · GiftwrapChargeback · ShippingChargeback · RefundCommission · VariableClosingFee · MarketplaceFacilitatorVAT-Principal · MarketplaceFacilitatorVAT-Shipping · DigitalServicesFee</td></tr>
+<tr><td><code>Shipment-Fees</code></td><td>FBAPerOrderFulfillmentFee · FBATransportationFee</td></tr>
+<tr><td><code>other-transaction</code></td><td><b>Current Reserve Amount</b> · <b>Previous Reserve Amount Balance</b> · Storage Fee · Refund Reimbursal · StorageRenewalBilling · DisposalComplete · ShippingHB · Subscription Fee</td></tr>
+<tr><td><code>Promotion</code></td><td>(seen as a type; descriptions vary by account)</td></tr>
+</table>
+
+<h2>Known unknowns — what Amazon does not document</h2>
+<p>These gaps are the reason most reconciliation tools quietly get things wrong. Stating them plainly:</p>
+<table>
+<tr><th>Gap</th><th>Consequence</th></tr>
+<tr><td><b>No official enumeration for <code>transaction-type</code></b>. The Order / Refund / Transfer / Liquidations list circulating online has no citable Amazon source.</td><td>Any tool that hard-codes those four will silently drop rows it doesn't recognise. This parser classifies nothing and shows every value.</td></tr>
+<tr><td><b>No official enumeration for <code>amount-type</code> or <code>amount-description</code></b>.</td><td>New fee codes appear without notice. A hard-coded mapping goes stale silently.</td></tr>
+<tr><td><b>No documented sign convention.</b></td><td>Whether a fee is negative is inferred, not specified.</td></tr>
+<tr><td><b>No documented character encoding.</b></td><td>Non-ASCII SKU or product names can corrupt on import.</td></tr>
+<tr><td><b>No documented summary-row structure.</b> In practice the first row carries only settlement-id, the dates, total-amount and currency.</td><td>Read as a data row, it double-counts the total.</td></tr>
+<tr><td><b>No data types or nullability</b> for any of the 24 columns.</td><td>Parsers guess.</td></tr>
+</table>
+
+<h2>Why your numbers don't match — five specific causes</h2>
+
+<h3>1 · The reserve is missing</h3>
+<p>Under <code>amount-type = other-transaction</code> you will find <code>Current Reserve Amount</code> and <code>Previous Reserve Amount Balance</code>. Amazon withholds part of the money and releases it in a later period. <b>Compute "order revenue minus fees" without these and the total will never equal the deposit.</b> This is the single most commonly missed item.</p>
+
+<h3>2 · posted-date sits outside the settlement period</h3>
+<p><code>posted-date</code> is when an individual line occurred. Settlement is cut by <code>settlement-start-date</code> → <code>settlement-end-date</code>. These do not have to coincide, and across a month boundary they usually don't. If your ERP aggregates by posted-date while Amazon settles by period, <b>the two use different definitions — nothing is wrong with the data</b>. Aggregate by settlement period.</p>
+
+<h3>3 · One order is many rows</h3>
+<p>A single <code>order-id</code> appears as several rows — Principal on one, Commission on another, the FBA fee on a third. To attribute to a SKU you must group by <code>order-id</code> <b>plus</b> <code>order-item-code</code>. Grouping by order-id alone merges an order containing two different items.</p>
+
+<h3>4 · quantity-purchased is repeated, not per-row</h3>
+<p><code>quantity-purchased</code> is restated on every row belonging to the same order item. <b>Summing the column multiplies the quantity by the number of rows.</b> De-duplicate by <code>order-id + order-item-code</code> first. This one is easy to miss because nothing errors — you just get a plausible wrong number.</p>
+
+<h3>5 · Currencies get added together</h3>
+<p>Flat File V2 has one <code>currency</code> column and <b>no exchange-rate column</b>. Figures from different settlements in different currencies cannot be summed. Group by currency and keep them apart.</p>
+
+<h2>About this page</h2>
+<p class="note">I build data pipelines and reconciliation tooling, and I spent several years in cross-border e-commerce before that. This parser runs entirely in your browser because financial exports are not something you should have to upload to a stranger. If you find a fee code that isn't listed above, send it over — the reference gets updated and everyone benefits. If you need several accounts archived and merged automatically each month, that's the paid version of this: get in touch.</p>
+<p class="note" style="border-top:1px solid var(--line);padding-top:14px;margin-top:16px">Tool version v1.3 · 2026-08-12 · Contact: <a href="mailto:support@nexusaistart.com?subject=Settlement%20Parser">support@nexusaistart.com</a><br>The fee-code reference below is added to over time. The copy you are reading is static; the current version lives at <a href="https://nexusaistart.com/tools/amazon-settlement-parser/">nexusaistart.com/tools/amazon-settlement-parser/</a></p>
+</div>
+
+</div></body></html>

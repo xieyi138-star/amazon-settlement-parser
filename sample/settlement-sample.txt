@@ -1,0 +1,25 @@
+settlement-id	settlement-start-date	settlement-end-date	deposit-date	total-amount	currency	transaction-type	order-id	merchant-order-id	adjustment-id	shipment-id	marketplace-name	amount-type	amount-description	amount	fulfillment-id	posted-date	posted-date-time	order-item-code	merchant-order-item-id	merchant-adjustment-item-id	sku	quantity-purchased	promotion-id
+28471003921	2026-06-16 00:00:00 UTC	2026-06-30 23:59:59 UTC	2026-07-02 00:00:00 UTC	582.89	USD																		
+28471003921					USD	Order	114-8829371-4410258			DS7K9LM2P	amazon.com	ItemPrice	Principal	129.99	AFN	2026-06-17 00:00:00 UTC	2026-06-17 08:14:22 UTC	55182930114			NX-HD-1200	1	
+28471003921					USD	Order	114-8829371-4410258			DS7K9LM2P	amazon.com	ItemPrice	Tax	10.40	AFN	2026-06-17 00:00:00 UTC	2026-06-17 08:14:22 UTC	55182930114			NX-HD-1200	1	
+28471003921					USD	Order	114-8829371-4410258			DS7K9LM2P	amazon.com	ItemFees	Commission	-19.50	AFN	2026-06-17 00:00:00 UTC	2026-06-17 08:14:22 UTC	55182930114			NX-HD-1200	1	
+28471003921					USD	Order	114-8829371-4410258			DS7K9LM2P	amazon.com	ItemFees	FBAPerUnitFulfillmentFee	-4.75	AFN	2026-06-17 00:00:00 UTC	2026-06-17 08:14:22 UTC	55182930114			NX-HD-1200	1	
+28471003921					USD	Order	114-8829371-4410258			DS7K9LM2P	amazon.com	ItemFees	MarketplaceFacilitatorVAT-Principal	-10.40	AFN	2026-06-17 00:00:00 UTC	2026-06-17 08:14:22 UTC	55182930114			NX-HD-1200	1	
+28471003921					USD	Order	113-2047718-9930613			DS7K9LM2Q	amazon.com	ItemPrice	Principal	89.00	AFN	2026-06-19 00:00:00 UTC	2026-06-19 15:02:10 UTC	55182930221			NX-CB-0450	2	
+28471003921					USD	Order	113-2047718-9930613			DS7K9LM2Q	amazon.com	ItemPrice	Shipping	7.99	AFN	2026-06-19 00:00:00 UTC	2026-06-19 15:02:10 UTC	55182930221			NX-CB-0450	2	
+28471003921					USD	Order	113-2047718-9930613			DS7K9LM2Q	amazon.com	ItemFees	Commission	-13.35	AFN	2026-06-19 00:00:00 UTC	2026-06-19 15:02:10 UTC	55182930221			NX-CB-0450	2	
+28471003921					USD	Order	113-2047718-9930613			DS7K9LM2Q	amazon.com	ItemFees	ShippingChargeback	-7.99	AFN	2026-06-19 00:00:00 UTC	2026-06-19 15:02:10 UTC	55182930221			NX-CB-0450	2	
+28471003921					USD	Order	113-2047718-9930613			DS7K9LM2R	amazon.com	ItemPrice	Principal	45.50	AFN	2026-06-19 00:00:00 UTC	2026-06-19 15:02:10 UTC	55182930222			NX-AC-0071	1	
+28471003921					USD	Order	113-2047718-9930613			DS7K9LM2R	amazon.com	ItemFees	Commission	-6.83	AFN	2026-06-19 00:00:00 UTC	2026-06-19 15:02:10 UTC	55182930222			NX-AC-0071	1	
+28471003921					USD	Refund	112-5561209-7742044			DS7K9LM1A	amazon.com	ItemPrice	Principal	-129.99	AFN	2026-06-22 00:00:00 UTC	2026-06-22 11:47:03 UTC	55180221007			NX-HD-1200	1	
+28471003921					USD	Refund	112-5561209-7742044			DS7K9LM1A	amazon.com	ItemFees	RefundCommission	-5.00	AFN	2026-06-22 00:00:00 UTC	2026-06-22 11:47:03 UTC	55180221007			NX-HD-1200	1	
+28471003921					USD	Refund	112-5561209-7742044			DS7K9LM1A	amazon.com	ItemFees	Commission	19.50	AFN	2026-06-22 00:00:00 UTC	2026-06-22 11:47:03 UTC	55180221007			NX-HD-1200	1	
+28471003921					USD	Order	114-9930211-5567819			DS7K9LM3B	amazon.com	ItemPrice	Principal	210.00	AFN	2026-06-14 00:00:00 UTC	2026-06-14 09:31:55 UTC	55179004412			NX-HD-1200	1	
+28471003921					USD	Order	114-9930211-5567819			DS7K9LM3B	amazon.com	ItemFees	Commission	-31.50	AFN	2026-06-14 00:00:00 UTC	2026-06-14 09:31:55 UTC	55179004412			NX-HD-1200	1	
+28471003921					USD	ServiceFee					amazon.com	other-transaction	Storage Fee	-64.28		2026-06-30 00:00:00 UTC	2026-06-30 04:12:00 UTC						
+28471003921					USD	ServiceFee					amazon.com	other-transaction	Subscription Fee	-39.99		2026-06-30 00:00:00 UTC	2026-06-30 04:12:00 UTC						
+28471003921					USD	ServiceFee					amazon.com	other-transaction	LowInventoryLevelFee	-12.60		2026-06-28 00:00:00 UTC	2026-06-28 04:12:00 UTC						
+28471003921					USD	Shipment					amazon.com	Shipment-Fees	FBAPerOrderFulfillmentFee	-2.50		2026-06-19 00:00:00 UTC	2026-06-19 15:02:10 UTC						
+28471003921					USD	Adjustment			ADJ-99201884		amazon.com	other-transaction	Refund Reimbursal	18.75		2026-06-25 00:00:00 UTC	2026-06-25 10:00:00 UTC						
+28471003921					USD	Transfer					amazon.com	other-transaction	Previous Reserve Amount Balance	820.44		2026-06-16 00:00:00 UTC	2026-06-16 00:00:00 UTC						
+28471003921					USD	Transfer					amazon.com	other-transaction	Current Reserve Amount	-420.00		2026-06-30 00:00:00 UTC	2026-06-30 23:59:59 UTC						

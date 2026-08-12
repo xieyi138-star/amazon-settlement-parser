@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>亚马逊结算报告拆解工具 — 文件不上传，全在你自己电脑上跑</title>
+<meta name="description" content="把亚马逊 Flat File V2 结算报告拖进来，看清这笔回款是怎么算出来的：费用构成、储备金、落在结算周期外的行、每个 SKU 的净额。文件不上传。另附亚马逊官方没有公布的字段与费用代码对照表。">
+<link rel="canonical" href="https://nexusaistart.com/zh/tools/amazon-settlement-parser/">
+<link rel="alternate" hreflang="en" href="https://nexusaistart.com/tools/amazon-settlement-parser/">
+<link rel="alternate" hreflang="zh" href="https://nexusaistart.com/zh/tools/amazon-settlement-parser/">
+<link rel="alternate" hreflang="x-default" href="https://nexusaistart.com/tools/amazon-settlement-parser/">
+<style>
+:root{--bg:#0f1115;--card:#171a21;--line:#262b36;--fg:#e6e9ef;--dim:#8b93a3;--warn:#e8a33d;--bad:#e35d5d;--ok:#4caf7d;--acc:#5b9cf8}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.75 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif;padding:24px}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:25px;margin:0 0 6px;line-height:1.3}
+h2{font-size:19px;margin:34px 0 10px}
+h3{font-size:15.5px;margin:22px 0 6px}
+.lede{color:var(--dim);font-size:15.5px;margin-bottom:18px}
+.lang{font-size:13px;margin-bottom:18px}
+.pledge{background:#12241a;border:1px solid #1f4030;color:#8fdcae;padding:12px 15px;border-radius:8px;font-size:14px;margin-bottom:20px}
+#drop{border:2px dashed var(--line);border-radius:12px;padding:52px 20px;text-align:center;color:var(--dim);cursor:pointer;transition:.15s}
+#drop:hover,#drop.on{border-color:var(--acc);color:var(--fg);background:#151a24}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin:16px 0}
+.card h2{font-size:15px;margin:0 0 12px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0}
+th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--dim);font-weight:600}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.neg{color:var(--bad)}.pos{color:var(--ok)}
+.tag{font-size:11px;padding:1px 6px;border-radius:4px;background:#232833;color:var(--dim)}
+.warn{border-color:#4a3a1a}.bad{border-color:#4a2020}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.kv div{background:#12151c;border-radius:8px;padding:10px 12px}
+.kv .lbl{color:var(--dim);font-size:12px}
+.kv .val{font-size:16px;font-variant-numeric:tabular-nums;margin-top:2px}
+.sub2{color:var(--dim);font-size:13px;margin-top:8px}
+.grp{margin-top:14px}.grp>.gh{font-size:13px;color:var(--acc);margin-bottom:4px}
+code{background:#12151c;padding:1px 5px;border-radius:4px;font-size:12.5px;word-break:break-word}
+hr{border:0;border-top:1px solid var(--line);margin:44px 0}
+.ref p{color:#c3c9d4}
+.ref .note{color:var(--dim);font-size:13.5px}
+.cta{background:#101a2b;border:1px solid #23405f;border-radius:10px;padding:16px 18px;margin:28px 0}
+.upd{color:var(--dim);font-size:12.5px}
+a{color:var(--acc)}
+
+/* 窄屏：宽表格在卡片内横向滚动，不撑破页面（新增，未改动任何现有规则） */
+@media(max-width:520px){.card{overflow-x:auto}}
+</style>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+{"@type":"SoftwareApplication","name":"亚马逊结算报告拆解工具","applicationCategory":"BusinessApplication","operatingSystem":"浏览器","offers":{"@type":"Offer","price":"0","priceCurrency":"CNY"},"description":"在浏览器本地解析亚马逊 Flat File V2 结算报告，输出费用构成、储备金、周期外过账与每个 SKU 的净额。文件不上传。"},
+{"@type":"Dataset","name":"亚马逊结算报告（Flat File V2）字段与费用代码对照表","description":"24 个官方列名、transaction-type / amount-type / amount-description 的实际观察取值，以及亚马逊官方文档未说明的部分。","license":"https://creativecommons.org/licenses/by/4.0/"},
+{"@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"为什么结算报告和实际回款对不上？","acceptedAnswer":{"@type":"Answer","text":"最容易漏的是储备金。amount-type 为 other-transaction 下面有 Current Reserve Amount 和 Previous Reserve Amount Balance 两项，亚马逊会压一部分钱到下一期再放。只算订单收入减各项费用而不计储备金，总数永远对不上。"}},
+{"@type":"Question","name":"亚马逊有公布 transaction-type 的取值列表吗？","acceptedAnswer":{"@type":"Answer","text":"没有。亚马逊 SP-API 的结算报告类型文档只给出 24 个列名，没有公布 transaction-type、amount-type 或 amount-description 的取值枚举。"}},
+{"@type":"Question","name":"亚马逊结算报告能保留多久？","acceptedAnswer":{"@type":"Answer","text":"Flat File V2 结算报告由亚马逊自动生成、无法主动请求，卖家后台大约只保留最近 90 天，约六个结算周期，过期后无法再获取。"}}]}]}
+</script>
+</head>
+<body><div class="wrap">
+
+<h1>亚马逊结算报告拆解工具</h1>
+<div class="lede">把 Flat File V2 结算报告拖进来，看清这笔回款到底是怎么算出来的——费用构成、储备金、落在周期外的过账、每个 SKU 的净额。免费，不用注册。</div>
+<div class="lang"><a href="https://nexusaistart.com/tools/amazon-settlement-parser/">English</a> · <a href="https://nexusaistart.com/">首页</a></div>
+
+<div class="pledge">
+🔒 <b>你的文件一秒都不会离开这台电脑。</b>全部在浏览器里算，没有服务器、没有数据库、没有任何统计脚本碰你的数据。断网也照样能用，不信可以开 F12 的 Network 面板自己看。
+</div>
+
+<div id="drop">把结算报告拖到这里，或点击选择<br>
+<span style="font-size:13px">卖家后台 → Payments → All Statements → <b>Download Flat File V2</b>（.txt 或 .csv，里面其实是制表符分隔）</span></div>
+<input type="file" id="fi" hidden accept=".txt,.csv,.tsv,text/plain">
+
+<div id="out"></div>
+
+<script>
+/* ============================================================
+   可编辑配置区
+   亚马逊官方不提供 transaction-type / amount-type / amount-description
+   的取值枚举。下面这些来自第三方文档和真实报告的收集。
+   凡是不在清单里的取值，工具照样原样列出，绝不静默过滤。
+   ============================================================ */
+const KNOWN={
+  amountType:['ItemPrice','ItemFees','other-transaction','Promotion','Shipment-Fees'],
+  amountDesc:['Principal','Shipping','GiftWrap','Goodwill','RestockingFee',
+    'Commission','FBAPerUnitFulfillmentFee','FBAWeightBasedFee','GiftwrapChargeback',
+    'ShippingChargeback','RefundCommission','VariableClosingFee',
+    'FBAPerOrderFulfillmentFee','FBATransportationFee',
+    'Current Reserve Amount','Previous Reserve Amount Balance','Storage Fee','Refund Reimbursal',
+    'Tax','ShippingTax','MarketplaceFacilitatorVAT-Principal','MarketplaceFacilitatorVAT-Shipping',
+    'DigitalServicesFee','StorageRenewalBilling','DisposalComplete','ShippingHB'],
+  txType:[]
+};
+const RESERVE_KEYS=['Current Reserve Amount','Previous Reserve Amount Balance'];
+const COLS=['settlement-id','settlement-start-date','settlement-end-date','deposit-date','total-amount','currency','transaction-type','order-id','merchant-order-id','adjustment-id','shipment-id','marketplace-name','amount-type','amount-description','amount','fulfillment-id','posted-date','posted-date-time','order-item-code','merchant-order-item-id','merchant-adjustment-item-id','sku','quantity-purchased','promotion-id'];
+
+const $=s=>document.querySelector(s),out=$('#out'),drop=$('#drop'),fi=$('#fi');
+drop.onclick=()=>fi.click();
+fi.onchange=e=>e.target.files[0]&&load(e.target.files[0]);
+['dragenter','dragover'].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.add('on')}));
+['dragleave','drop'].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.remove('on')}));
+drop.addEventListener('drop',e=>{e.dataTransfer.files[0]&&load(e.dataTransfer.files[0])});
+
+function load(file){const fr=new FileReader();
+  fr.onload=()=>{try{render(parse(decode(fr.result)),file.name)}catch(err){out.innerHTML=`<div class="card bad"><h2>解析失败</h2><pre>${esc(err.message)}</pre></div>`}};
+  fr.readAsArrayBuffer(file);}
+
+function decode(buf){const u8=new TextDecoder('utf-8',{fatal:false}).decode(buf);
+  const bad=(u8.match(/�/g)||[]).length;
+  if(bad>0&&bad/u8.length>0.0005){try{return{text:new TextDecoder('windows-1252').decode(buf),enc:'windows-1252（UTF-8 解出 '+bad+' 个替换字符，已回退）'}}catch(e){}}
+  return{text:u8,enc:'UTF-8'+(bad?`（含 ${bad} 个替换字符，留意一下）`:'')};}
+
+function parse({text,enc}){const lines=text.replace(/\r\n?/g,'\n').split('\n').filter(l=>l.length);
+  if(!lines.length)throw new Error('文件是空的');
+  const probe=lines.slice(0,5).join('\n');
+  const delim=(probe.split('\t').length>=probe.split(',').length)?'\t':',';
+  const head=lines[0].split(delim).map(s=>s.trim().replace(/^"|"$/g,''));
+  const idx={};head.forEach((h,i)=>idx[h]=i);
+  const missing=COLS.filter(c=>!(c in idx));
+  const rows=[];
+  for(let i=1;i<lines.length;i++){const c=lines[i].split(delim);const o={};
+    head.forEach((h,j)=>o[h]=(c[j]??'').trim().replace(/^"|"$/g,''));rows.push(o);}
+  return{rows,head,delim:delim==='\t'?'制表符 TAB':'逗号',enc,missing};}
+
+const num=v=>{const n=parseFloat(String(v).replace(/[^0-9.\-]/g,''));return isNaN(n)?0:n};
+const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const money=n=>`<span class="${n<0?'neg':'pos'}">${n<0?'-':''}${Math.abs(n).toFixed(2)}</span>`;
+const D=s=>{const t=Date.parse(String(s).replace(/ UTC$/,'Z'));return isNaN(t)?null:t};
+
+function render(P,fname){const{rows}=P;
+  const isSum=r=>!r['transaction-type']&&!r['amount'];
+  const sumRows=rows.filter(isSum),dataRows=rows.filter(r=>!isSum(r));
+  const meta=sumRows[0]||rows[0]||{};
+  const declared=sumRows.reduce((a,r)=>a+num(r['total-amount']),0)||num(meta['total-amount']);
+  const start=meta['settlement-start-date'],end=meta['settlement-end-date'];
+  const sT=D(start),eT=D(end);
+  const byCur={};dataRows.forEach(r=>{const c=r['currency']||'(空)';(byCur[c]=byCur[c]||[]).push(r)});
+  const curs=Object.keys(byCur);
+  let h='';
+
+  h+=`<div class="card"><h2>① 结算概览</h2><div class="kv">
+    <div><div class="lbl">文件</div><div class="val" style="font-size:13px">${esc(fname)}</div></div>
+    <div><div class="lbl">settlement-id</div><div class="val" style="font-size:13px">${esc(meta['settlement-id']||'—')}</div></div>
+    <div><div class="lbl">结算周期</div><div class="val" style="font-size:13px">${esc(start||'—')} → ${esc(end||'—')}</div></div>
+    <div><div class="lbl">打款日 deposit-date</div><div class="val" style="font-size:13px">${esc(meta['deposit-date']||'—')}</div></div>
+    <div><div class="lbl">明细行数</div><div class="val">${dataRows.length}</div></div>
+    <div><div class="lbl">汇总行数</div><div class="val">${sumRows.length}</div></div>
+  </div><div class="sub2">分隔符：${P.delim} · 编码：${esc(P.enc)}${P.missing.length?` · <span class="neg">缺少官方字段 ${P.missing.length} 个：${esc(P.missing.join(', '))}</span>`:' · 官方 24 列齐全'}</div></div>`;
+
+  curs.forEach(cur=>{const rs=byCur[cur];const calc=rs.reduce((a,r)=>a+num(r['amount']),0);
+    const diff=curs.length===1?(calc-declared):null;
+    h+=`<div class="card ${diff!==null&&Math.abs(diff)>0.01?'warn':''}"><h2>② 总额核对 <span class="tag">${esc(cur)}</span></h2><div class="kv">
+      <div><div class="lbl">报告声明 total-amount</div><div class="val">${curs.length===1?money(declared):'—（多币种）'}</div></div>
+      <div><div class="lbl">逐行加总 amount</div><div class="val">${money(calc)}</div></div>
+      <div><div class="lbl">差额</div><div class="val">${diff===null?'—':money(diff)}</div></div>
+    </div>${diff!==null&&Math.abs(diff)>0.01?`<div class="sub2">⚠️ 这两个数对不上。常见原因：储备金没算进去、汇总行被当成数据行重复计了、或者有本工具没认出来的行类型（看第 ⑤ 区）。</div>`:''}</div>`;});
+
+  if(curs.length>1)h+=`<div class="card bad"><h2>⚠️ 多币种</h2>这个文件里有 ${curs.length} 种币种：<code>${curs.map(esc).join('</code> <code>')}</code>。
+    Flat File V2 只有一个 <code>currency</code> 列，<b>没有汇率列</b>，所以下面所有金额都按币种分开统计，<b>绝不跨币种相加</b>。
+    <div class="sub2">很多 ERP 的对账误差就出在这。</div></div>`;
+
+  curs.forEach(cur=>{const rs=byCur[cur],tree={};
+    rs.forEach(r=>{const t=r['amount-type']||'(空)',d=r['amount-description']||'(空)';
+      tree[t]=tree[t]||{sum:0,n:0,kids:{}};tree[t].sum+=num(r['amount']);tree[t].n++;
+      tree[t].kids[d]=tree[t].kids[d]||{sum:0,n:0};tree[t].kids[d].sum+=num(r['amount']);tree[t].kids[d].n++;});
+    h+=`<div class="card"><h2>③ 费用构成 <span class="tag">${esc(cur)}</span></h2>`;
+    Object.entries(tree).sort((a,b)=>a[1].sum-b[1].sum).forEach(([t,v])=>{
+      const unk=!KNOWN.amountType.includes(t)&&t!=='(空)';
+      h+=`<div class="grp"><div class="gh">${esc(t)} ${unk?'<span class="tag" style="color:#e8a33d">未识别</span>':''} · ${v.n} 笔 · ${money(v.sum)}</div><table><tr><th>amount-description</th><th class="n">笔数</th><th class="n">金额</th></tr>`;
+      Object.entries(v.kids).sort((a,b)=>a[1].sum-b[1].sum).forEach(([d,k])=>{
+        const u=!KNOWN.amountDesc.includes(d)&&d!=='(空)';
+        h+=`<tr><td>${esc(d)}${u?' <span class="tag" style="color:#e8a33d">未识别</span>':''}</td><td class="n">${k.n}</td><td class="n">${money(k.sum)}</td></tr>`;});
+      h+='</table></div>';});
+    h+='</div>';});
+
+  const res=dataRows.filter(r=>RESERVE_KEYS.includes(r['amount-description']));
+  h+=`<div class="card ${res.length?'warn':''}"><h2>④ 储备金 Reserve</h2>`;
+  if(res.length){const t={};res.forEach(r=>{const k=r['amount-description']+'|'+(r['currency']||'');t[k]=(t[k]||0)+num(r['amount'])});
+    h+='<table><tr><th>项目</th><th>币种</th><th class="n">金额</th></tr>';
+    Object.entries(t).forEach(([k,v])=>{const[d,c]=k.split('|');h+=`<tr><td>${esc(d)}</td><td>${esc(c)}</td><td class="n">${money(v)}</td></tr>`});
+    h+=`</table><div class="sub2">⚠️ 亚马逊会压一部分钱不给你，下期再放。<b>只算「订单收入减各项费用」不算储备金，总数永远对不上实际打款。</b></div>`;}
+  else h+=`<div class="sub2">这一期没找到储备金相关的行（<code>${RESERVE_KEYS.join('</code> / <code>')}</code>）。如果打款还是对不上，可能有本工具没见过的取值，第 ⑤ 区会列出来。</div>`;
+  h+='</div>';
+
+  const unkT={},unkA={},unkD={};
+  dataRows.forEach(r=>{const t=r['transaction-type'],a=r['amount-type'],d=r['amount-description'];
+    if(t)unkT[t]=(unkT[t]||0)+1;
+    if(a&&!KNOWN.amountType.includes(a))unkA[a]=(unkA[a]||0)+1;
+    if(d&&!KNOWN.amountDesc.includes(d))unkD[d]=(unkD[d]||0)+1;});
+  h+=`<div class="card ${Object.keys(unkA).length||Object.keys(unkD).length?'warn':''}"><h2>⑤ 取值清单 · 什么都不过滤</h2>
+  <div class="sub2" style="margin:0 0 10px">亚马逊<b>没有公布</b> <code>transaction-type</code>、<code>amount-type</code>、<code>amount-description</code> 的取值枚举。所以这个工具不硬编码任何分类——你文件里出现的每个取值都会列在下面，包括它没见过的。</div>`;
+  const tbl=(title,o,note)=>{if(!Object.keys(o).length)return'';
+    let s=`<div class="grp"><div class="gh">${title}</div><table><tr><th>取值</th><th class="n">笔数</th></tr>`;
+    Object.entries(o).sort((a,b)=>b[1]-a[1]).forEach(([k,v])=>s+=`<tr><td><code>${esc(k)}</code></td><td class="n">${v}</td></tr>`);
+    return s+`</table>${note?`<div class="sub2">${note}</div>`:''}</div>`};
+  h+=tbl('transaction-type · 全部列出，官方无枚举',unkT,'网上流传的 Order / Refund / Transfer / Liquidations 那套找不到亚马逊官方出处，所以这里不做任何归类，原样呈现。');
+  h+=tbl('amount-type · 不在已知清单里',unkA,'发我一份（<a href="mailto:support@nexusaistart.com?subject=%E7%BB%93%E7%AE%97%E6%8A%A5%E5%91%8A%E5%B7%A5%E5%85%B7%20%C2%B7%20%E6%96%B0%E7%9A%84%E8%B4%B9%E7%94%A8%E4%BB%A3%E7%A0%81">support@nexusaistart.com</a>），我加进下面那张公开对照表。');
+  h+=tbl('amount-description · 不在已知清单里',unkD,'发我一份（<a href="mailto:support@nexusaistart.com?subject=%E7%BB%93%E7%AE%97%E6%8A%A5%E5%91%8A%E5%B7%A5%E5%85%B7%20%C2%B7%20%E6%96%B0%E7%9A%84%E8%B4%B9%E7%94%A8%E4%BB%A3%E7%A0%81">support@nexusaistart.com</a>），我加进下面那张公开对照表。');
+  h+='</div>';
+
+  if(sT&&eT){const oob=dataRows.filter(r=>{const p=D(r['posted-date']||r['posted-date-time']);return p&&(p<sT||p>eT)});
+    h+=`<div class="card ${oob.length?'warn':''}"><h2>⑥ 落在结算周期外的过账</h2>`;
+    if(oob.length){const s=oob.reduce((a,r)=>a+num(r['amount']),0);
+      h+=`<div class="kv"><div><div class="lbl">越界行数</div><div class="val">${oob.length}</div></div>
+      <div><div class="lbl">占比</div><div class="val">${(oob.length/dataRows.length*100).toFixed(1)}%</div></div>
+      <div><div class="lbl">金额合计</div><div class="val">${money(s)}</div></div></div>
+      <div class="sub2">⚠️ <b>这是 ERP 跟后台对不上的高频原因。</b>ERP 按 <code>posted-date</code>（发生日）归集、亚马逊按结算周期切账，跨月的时候必然不一样——<b>不是数据错了，是口径不同</b>。汇总要按结算周期，别按 posted-date。</div>`;}
+    else h+=`<div class="sub2">这个文件里所有明细的 posted-date 都在结算周期内。</div>`;
+    h+='</div>';}
+
+  curs.forEach(cur=>{const m={};
+    byCur[cur].forEach(r=>{const s=r['sku'];if(!s)return;
+      m[s]=m[s]||{sum:0,n:0,items:new Map()};m[s].sum+=num(r['amount']);m[s].n++;
+      /* quantity-purchased 在同一订单项的每一行都重复出现，直接 sum 会把数量乘以行数 */
+      const key=(r['order-id']||'')+'|'+(r['order-item-code']||'');
+      const isRef=/refund/i.test(r['transaction-type']||'');
+      if(!m[s].items.has(key))m[s].items.set(key,{qty:num(r['quantity-purchased']),ref:isRef});
+      else{const e=m[s].items.get(key);if(!e.qty)e.qty=num(r['quantity-purchased']);if(isRef)e.ref=true;}});
+    const list=Object.entries(m).sort((a,b)=>a[1].sum-b[1].sum);
+    if(!list.length)return;
+    h+=`<div class="card"><h2>⑦ SKU 维度 <span class="tag">${esc(cur)}</span></h2>
+    <div class="sub2" style="margin:0 0 10px">订单项按 <code>order-id + order-item-code</code> 去重计数——<b>只按 order-id 会把一单多 item 算成一个</b>。
+    数量也一样要先去重，因为 <code>quantity-purchased</code> 在同一订单项的每一行都重复出现，直接相加会把数量乘以行数。<br>
+    退款判定：<code>transaction-type</code> 里含 "refund"（不分大小写）。<b>官方不提供这个字段的枚举，所以这是启发式判断</b>，请对照第 ⑤ 区的取值清单自己核一下。<br>
+    ⚠️ 24 个字段里<b>没有任何成本（COGS）字段</b>，所以下表是「亚马逊侧净额」，<b>不是利润</b>。</div>
+    <table><tr><th>SKU</th><th class="n">订单项</th><th class="n">售出数量</th><th class="n">退款数量</th><th class="n">行数</th><th class="n">净额</th></tr>`;
+    list.slice(0,50).forEach(([s,v])=>{let sold=0,refd=0;
+      v.items.forEach(e=>{if(e.ref)refd+=e.qty;else sold+=e.qty});
+      h+=`<tr><td>${esc(s)}</td><td class="n">${v.items.size}</td><td class="n">${sold}</td><td class="n">${refd?'<span class="neg">'+refd+'</span>':0}</td><td class="n">${v.n}</td><td class="n">${money(v.sum)}</td></tr>`;});
+    h+=`</table>${list.length>50?`<div class="sub2">只显示净额最低的 50 个，共 ${list.length} 个 SKU。</div>`:''}</div>`;});
+
+  h+=`<div class="cta"><b>这只是一期、一个店铺。</b><br>
+  这个报告是亚马逊自动生成的，你没法主动请求，后台大概只留最近 90 天、六期左右，过了就永久拿不到了。<br>
+  如果你有好几个店，想每个月自动归档、合并成一张表，可以找我：微信 <code>nexusaistart</code>（备注「结算工具」）</div>`;
+  out.innerHTML=h;
+  out.scrollIntoView({behavior:'smooth',block:'start'});
+}
+</script>
+
+<hr>
+
+<div class="ref">
+<h2>亚马逊结算报告（Flat File V2）字段与费用代码对照表</h2>
+<p class="upd">更新于 2026-08-12 · 列名来自亚马逊 SP-API 官方文档。取值枚举<b>官方并未公布</b>，是从第三方文档和真实报告里收集的。有新的取值或发现错误，发我 <a href="mailto:support@nexusaistart.com?subject=%E7%BB%93%E7%AE%97%E6%8A%A5%E5%91%8A%E5%B7%A5%E5%85%B7%20%C2%B7%20%E6%96%B0%E7%9A%84%E8%B4%B9%E7%94%A8%E4%BB%A3%E7%A0%81">support@nexusaistart.com</a>，我加进来。</p>
+
+<h3>报告类型</h3>
+<table>
+<tr><th>项</th><th>值</th></tr>
+<tr><td>当前版本</td><td><code>GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2</code>（Seller Central 卖家）</td></tr>
+<tr><td>已弃用</td><td><code>GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE</code>、<code>GET_V2_SETTLEMENT_REPORT_DATA_XML</code></td></tr>
+<tr><td>分隔符</td><td>制表符</td></tr>
+<tr><td>怎么生成的</td><td><b>亚马逊自动排期生成，无法主动请求</b></td></tr>
+<tr><td>去哪下载</td><td>卖家后台 → Payments → All Statements → Download Flat File V2</td></tr>
+<tr><td>保留多久</td><td><b>大约最近 90 天</b>（约六个结算周期）</td></tr>
+</table>
+<p class="note">扩展名常见是 <code>.txt</code> 或 <code>.csv</code>，但里面是制表符分隔的。要按分隔符探测，别信扩展名。</p>
+
+<h3>24 个列名，按顺序</h3>
+<p><code>settlement-id</code> · <code>settlement-start-date</code> · <code>settlement-end-date</code> · <code>deposit-date</code> · <code>total-amount</code> · <code>currency</code> · <code>transaction-type</code> · <code>order-id</code> · <code>merchant-order-id</code> · <code>adjustment-id</code> · <code>shipment-id</code> · <code>marketplace-name</code> · <code>amount-type</code> · <code>amount-description</code> · <code>amount</code> · <code>fulfillment-id</code> · <code>posted-date</code> · <code>posted-date-time</code> · <code>order-item-code</code> · <code>merchant-order-item-id</code> · <code>merchant-adjustment-item-id</code> · <code>sku</code> · <code>quantity-purchased</code> · <code>promotion-id</code></p>
+<p class="note">官方文档给了列名，但<b>没给数据类型，也没说哪些可以为空</b>。</p>
+
+<h3>amount-type → amount-description 的实际取值</h3>
+<table>
+<tr><th>amount-type</th><th>见到过的 amount-description</th></tr>
+<tr><td><code>ItemPrice</code></td><td>Principal · Shipping · GiftWrap · Goodwill · RestockingFee · Tax · ShippingTax</td></tr>
+<tr><td><code>ItemFees</code></td><td>Commission · FBAPerUnitFulfillmentFee · FBAWeightBasedFee · GiftwrapChargeback · ShippingChargeback · RefundCommission · VariableClosingFee · MarketplaceFacilitatorVAT-Principal · MarketplaceFacilitatorVAT-Shipping · DigitalServicesFee</td></tr>
+<tr><td><code>Shipment-Fees</code></td><td>FBAPerOrderFulfillmentFee · FBATransportationFee</td></tr>
+<tr><td><code>other-transaction</code></td><td><b>Current Reserve Amount</b> · <b>Previous Reserve Amount Balance</b> · Storage Fee · Refund Reimbursal · StorageRenewalBilling · DisposalComplete · ShippingHB · Subscription Fee</td></tr>
+<tr><td><code>Promotion</code></td><td>（见过这个类型，具体描述各账号不同）</td></tr>
+</table>
+
+<h2>官方没说的六件事</h2>
+<p>大部分对账工具悄悄算错，根子都在这几个地方。直接摊开讲：</p>
+<table>
+<tr><th>缺口</th><th>后果</th></tr>
+<tr><td><b><code>transaction-type</code> 没有官方枚举。</b>网上流传的 Order / Refund / Transfer / Liquidations 找不到亚马逊出处。</td><td>硬编码这四个的工具，遇到没见过的值会静默丢行。这个工具不做归类，全部原样列出。</td></tr>
+<tr><td><b><code>amount-type</code> 和 <code>amount-description</code> 也没有官方枚举。</b></td><td>新费用代码随时会出现，硬编码的映射表会悄悄过期。</td></tr>
+<tr><td><b>没有说明正负号规则。</b></td><td>费用是不是负数，只能靠推断。</td></tr>
+<tr><td><b>没有说明文件编码。</b></td><td>SKU 或商品名里有非 ASCII 字符时可能乱码。</td></tr>
+<tr><td><b>没有说明汇总行结构。</b>实测首行只有 settlement-id、日期、total-amount 和 currency。</td><td>当成数据行读进去，总额会被重复计一遍。</td></tr>
+<tr><td><b>24 个列全都没给数据类型和可空性。</b></td><td>解析器只能靠猜。</td></tr>
+</table>
+
+<h2>对不上的五个具体原因</h2>
+
+<h3>一、储备金漏了</h3>
+<p><code>amount-type = other-transaction</code> 下面有 <code>Current Reserve Amount</code> 和 <code>Previous Reserve Amount Balance</code>。亚马逊压一部分钱，下期再放。<b>只算「订单收入减费用」不算这块，总数永远等不上打款金额。</b>这是最常被漏掉的一项。</p>
+
+<h3>二、posted-date 落在结算周期外</h3>
+<p><code>posted-date</code> 是单笔实际发生的时间，结算是按 <code>settlement-start-date</code> → <code>settlement-end-date</code> 切的。这两个不一定重合，跨月的时候基本都不重合。ERP 按发生日归集、亚马逊按周期结算，<b>那是两套口径，不是数据出错</b>。汇总按结算周期来。</p>
+
+<h3>三、一个订单在报告里是好几行</h3>
+<p>同一个 <code>order-id</code> 会拆成多行——Principal 一行、Commission 一行、FBA 费一行。要归到 SKU，得按 <code>order-id</code> 加上 <code>order-item-code</code>。光按 order-id，一单买了两个不同东西就串成一个了。</p>
+
+<h3>四、quantity-purchased 是重复的，不是每行独立的</h3>
+<p><code>quantity-purchased</code> 在同属一个订单项的每一行上都会重写一遍。<b>直接把这一列加起来，等于把数量乘以行数。</b>要先按 <code>order-id + order-item-code</code> 去重。这个坑特别阴，因为它不报错，只是给你一个看起来很合理的错数——我自己写这个工具的时候就翻过一次车。</p>
+
+<h3>五、把不同币种加到一起了</h3>
+<p>Flat File V2 只有一个 <code>currency</code> 列，<b>没有汇率列</b>。不同币种的结算不能相加，得按币种分开。</p>
+
+<h2>关于这个页面</h2>
+<p class="note">我做数据管道和对账工具，之前在跨境电商干过几年，再往前是工厂。当年拿 excel 硬啃这张表，啃到怀疑人生，所以后来干脆写了个东西专门拆它。<br>
+工具全部在浏览器里跑，是故意的——结算报告是你的财务数据，<b>不该为了搞清楚一个数对不上，就先把它交给一个陌生人。</b><br>
+你要是碰到上面表里没有的费用代码，发我一份，我加进去，后面的人也能用上。如果你有好几个店、需要每个月自动归档合并（亚马逊只留 90 天，过了就没了），那是这件事的付费版本，可以找我：微信 <code>nexusaistart</code>（备注「结算工具」）</p>
+<p class="note" style="border-top:1px solid var(--line);padding-top:14px;margin-top:16px">工具版本 v1.3 · 2026-08-12 · 联系：微信 <code>nexusaistart</code>（备注「结算工具」） · 邮箱 <a href="mailto:support@nexusaistart.com?subject=%E7%BB%93%E7%AE%97%E6%8A%A5%E5%91%8A%E5%B7%A5%E5%85%B7">support@nexusaistart.com</a><br>下面那张费用代码对照表在持续补充。你手上这份是静态的，最新版在 <a href="https://nexusaistart.com/zh/tools/amazon-settlement-parser/">nexusaistart.com/zh/tools/amazon-settlement-parser/</a></p>
+</div>
+
+</div></body></html>
