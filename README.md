@@ -41,6 +41,8 @@ Loading it should produce: declared total `582.89`, sum of rows `582.89`, differ
 claude mcp add amazon-settlement -- npx -y amazon-settlement-mcp
 ```
 
+Published as [`amazon-settlement-mcp`](https://www.npmjs.com/package/amazon-settlement-mcp), so there is nothing to clone or install first.
+
 Three tools: `lookup_fee_code`, `list_fee_codes`, and `check_settlement_report` — which reconciles a report and reports the failure modes that produce a plausible wrong number rather than an error. Setup and full tool documentation: [`mcp/README.md`](mcp/README.md).
 
 Same data file, same limits, no network requests.
@@ -283,6 +285,8 @@ Stated plainly, because a reconciliation tool that overstates itself is worse th
 ```sh
 claude mcp add amazon-settlement -- npx -y amazon-settlement-mcp
 ```
+
+已发布到 npm：[`amazon-settlement-mcp`](https://www.npmjs.com/package/amazon-settlement-mcp)，不用 clone 也不用先装。
 
 三个工具：`lookup_fee_code`、`list_fee_codes`，以及 `check_settlement_report`——后者跑完整对账，并专门报出那些**不报错、只给你一个看着合理的错数**的失败模式。安装方法和完整工具说明见 [`mcp/README.md`](mcp/README.md)。
 
